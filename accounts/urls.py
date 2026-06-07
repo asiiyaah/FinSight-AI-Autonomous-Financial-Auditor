@@ -1,10 +1,11 @@
 from django.urls import path
-from .views import RegisterView
+from .views import RegisterView,signup_page
 from rest_framework_simplejwt.views import TokenObtainPairView,TokenRefreshView
 
 
 urlpatterns=[
     path('register/',RegisterView.as_view(),name='register'),
+    path('signup/', signup_page, name='signup_html_screen'),
     # The login endpoint to get your tokens
     path('login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     # The endpoint to get a new access token using a refresh token
