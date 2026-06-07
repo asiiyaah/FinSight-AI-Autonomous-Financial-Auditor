@@ -6,3 +6,4 @@ from django.contrib.auth.models import AbstractUser
 # in the future without wiping or breaking the database.
 class CustomUser(AbstractUser):
     pass
+
