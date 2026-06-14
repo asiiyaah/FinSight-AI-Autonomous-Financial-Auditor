@@ -1,4 +1,4 @@
-from statements.models import Transaction, Statement
+from statements.models import Transaction,Statement
 from django.db.models import Max, Min, Sum
 
 
@@ -469,16 +469,19 @@ def run_audit(statement_id):
         "emi":detect_emi(statement_id, context)
     }
 
-    audit_result = {
+    analytics= {
         "audit_context": context,
         "cashflow": cashflow,
         "spending": spending,
         "risks": risks
     }
+    return analytics
+
+def run_full_audit(statement_id):
+    analytics = run_audit(statement_id)
 
     statement = Statement.objects.get(id=statement_id)
-    statement.audit_result = audit_result
-    statement.audit_status = True
+    statement.analytics = analytics
+    statement.audit_status = "auditing"
     statement.save()
 
-    return audit_result

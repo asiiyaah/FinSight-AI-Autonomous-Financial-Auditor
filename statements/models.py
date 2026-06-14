@@ -9,9 +9,12 @@ class Statement(models.Model):
     file_type = models.CharField(max_length=10)
     uploaded_at = models.DateTimeField(auto_now_add=True)
     is_parsed = models.BooleanField(default=False)
-    audit_result = models.JSONField(null=True, blank=True)
-    audit_status = models.BooleanField(default=False)
-    summary = models.TextField(null=True, blank=True)
+    audit_status = models.CharField(
+        max_length=30,
+        default="uploaded"
+    )
+    analytics = models.JSONField(default=dict, blank=True)
+    ai_audit = models.JSONField(default=dict, blank=True)
 
     def __str__(self):
         return f"{self.user.username} - {self.file_name}"
