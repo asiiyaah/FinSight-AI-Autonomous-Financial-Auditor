@@ -5,6 +5,25 @@ from django.db.models import Max, Min, Sum
 MIN_SUBSCRIPTION_DURATION_DAYS = 60
 MIN_ANOMALY_SAMPLE_SIZE = 10
 ANOMALY_STD_MULTIPLIER = 2
+EMI_KEYWORDS = ["emi", "loan", "finance", "repayment"]
+
+ESSENTIAL_CATEGORIES = [
+    "Bills",
+    "Rent",
+    "Utilities",
+    "Groceries",
+    "Transport",
+    "EMI",
+    "Healthcare"
+]
+
+DISCRETIONARY_CATEGORIES = [
+    "Shopping",
+    "Entertainment",
+    "Food",
+    "Travel",
+    "Subscription"
+]
 
 
 def get_audit_context(statement_id):
@@ -42,15 +61,27 @@ def get_audit_context(statement_id):
     else:
         duration_days = 0
 
+    if duration_days < 30:
+        audit_confidence = "low"
+        warning = "Statement covers less than 30 days. Insights may be less reliable."
+    elif duration_days < 90:
+        audit_confidence = "medium"
+        warning = "Statement covers less than 3 months. Trend-based insights may be limited."
+    else:
+        audit_confidence = "high"
+        warning = None
+
     return {
         "transaction_count": transaction_count,
         "start_date": str(start_date) if start_date else None,
         "end_date": str(end_date) if end_date else None,
         "duration_days": duration_days,
+        "audit_confidence": audit_confidence,
+        "warning": warning,
     }
 
 
-def calculate_cashflow(statement_id):
+def calculate_cashflow(statement_id,context):
     """
     Calculate core cashflow metrics.
 
@@ -77,11 +108,19 @@ def calculate_cashflow(statement_id):
     else:
         savings_rate = 0
 
+    duration_months=context['duration_days']/30
+
+    if duration_months>0:
+        burn_rate = total_debit / duration_months
+    else:
+        burn_rate=0
+
     return {
         "total_credit": float(total_credit),
         "total_debit": float(total_debit),
         "net_savings": float(net_savings),
         "savings_rate": round(float(savings_rate), 2),
+        "burn_rate": round(float(burn_rate), 2),
     }
 
 
@@ -227,6 +266,120 @@ def detect_subscriptions(statement_id, context):
     return subscriptions
 
 
+def detect_emi(statement_id, context):
+    """
+    Detect recurring EMI / loan repayment transactions.
+
+    Conditions:
+    - Statement duration must be at least 60 days
+    - Transaction description contains EMI-related keywords
+    - Same vendor + same amount recurring across months
+
+    Purpose:
+    Identifies debt obligations such as loan EMIs or finance payments.
+    """
+    if context["duration_days"] < MIN_SUBSCRIPTION_DURATION_DAYS:
+        return {
+        "detected": False,
+        "total_monthly_emi": 0,
+        "loans": []
+                }
+
+    transactions = Transaction.objects.filter(
+    statement_id=statement_id,
+    transaction_type="debit"
+    )
+
+    emi_candidates = []
+
+    for tx in transactions:
+        text = f"{tx.vendor} {tx.raw_description or ''}".lower()
+
+        if any(keyword in text for keyword in EMI_KEYWORDS):
+            emi_candidates.append(tx)
+
+    groups = {}
+
+    for tx in emi_candidates:
+        normalized_vendor = tx.vendor.lower().strip()
+        key = (normalized_vendor, tx.amount)
+
+        if key in groups:
+            groups[key].append(tx)
+        else:
+            groups[key] = [tx]
+    
+    loans = []
+    total_monthly_emi = 0
+
+    for group in groups.values():
+        unique_months = set()
+
+        for tx in group:
+            unique_months.add((tx.date.year, tx.date.month))
+
+        if len(unique_months) >= 2:
+            sample = group[0]
+
+            loan = {
+                    "vendor": sample.vendor,
+                    "amount": float(sample.amount),
+                    "months_detected": len(unique_months)
+                    }
+                
+            loans.append(loan)
+            total_monthly_emi += float(sample.amount)
+
+    return {
+    "detected": len(loans) > 0,
+    "total_monthly_emi": total_monthly_emi,
+    "loans": loans
+        }
+
+def calculate_spending_profile(category_breakdown):
+    """
+    Calculate essential vs discretionary spending ratios.
+
+    Essential spending:
+    Mandatory or necessary expenses such as bills, rent, utilities,
+    groceries, healthcare, and EMI.
+
+    Discretionary spending:
+    Non-essential lifestyle spending such as shopping, food delivery,
+    entertainment, travel, and subscriptions.
+
+    Purpose:
+    Helps AI understand whether spending is necessity-driven
+    or lifestyle-driven.
+    """
+    essential_spend = 0
+    discretionary_spend = 0
+
+    for category, amount in category_breakdown.items():
+        if category in ESSENTIAL_CATEGORIES:
+            essential_spend += amount
+        elif category in DISCRETIONARY_CATEGORIES:
+            discretionary_spend += amount
+        else:
+            discretionary_spend += amount
+
+    total_spend = essential_spend + discretionary_spend
+
+    if total_spend > 0:
+        essential_ratio = (essential_spend / total_spend) * 100
+        discretionary_ratio = (discretionary_spend / total_spend) * 100
+    else:
+        essential_ratio = 0
+        discretionary_ratio = 0
+
+    return {
+        "essential_spend": round(float(essential_spend), 2),
+        "discretionary_spend": round(float(discretionary_spend), 2),
+        "essential_ratio": round(float(essential_ratio), 2),
+        "discretionary_ratio": round(float(discretionary_ratio), 2)
+    }
+
+
 def detect_anomalies(statement_id):
     """
     Detect unusually high spending transactions.
@@ -299,16 +452,21 @@ def run_audit(statement_id):
     """
     context = get_audit_context(statement_id)
 
-    cashflow = calculate_cashflow(statement_id)
+    cashflow = calculate_cashflow(statement_id,context)
+
+    category_breakdown = calculate_category_breakdown(statement_id)
+    spending_profile = calculate_spending_profile(category_breakdown)
 
     spending = {
-        "category_breakdown": calculate_category_breakdown(statement_id)
-    }
+        "category_breakdown": category_breakdown,
+        "spending_profile": spending_profile
+              }
 
     risks = {
         "duplicates": detect_duplicates(statement_id),
         "subscriptions": detect_subscriptions(statement_id, context),
-        "anomalies": detect_anomalies(statement_id)
+        "anomalies": detect_anomalies(statement_id),
+        "emi":detect_emi(statement_id, context)
     }
 
     audit_result = {
