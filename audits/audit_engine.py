@@ -108,19 +108,11 @@ def calculate_cashflow(statement_id,context):
     else:
         savings_rate = 0
 
-    duration_months=context['duration_days']/30
-
-    if duration_months>0:
-        burn_rate = total_debit / duration_months
-    else:
-        burn_rate=0
-
     return {
         "total_credit": float(total_credit),
         "total_debit": float(total_debit),
         "net_savings": float(net_savings),
         "savings_rate": round(float(savings_rate), 2),
-        "burn_rate": round(float(burn_rate), 2),
     }
 
 
