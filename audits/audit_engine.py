@@ -1,5 +1,6 @@
 from statements.models import Transaction,Statement
 from django.db.models import Max, Min, Sum
+from audits.ai_audit import generate_ai_audit
 
 
 MIN_SUBSCRIPTION_DURATION_DAYS = 60
@@ -470,10 +471,36 @@ def run_audit(statement_id):
     return analytics
 
 def run_full_audit(statement_id):
-    analytics = run_audit(statement_id)
+    """
+    Execute complete FinSight audit pipeline.
+        -> Layer A deterministic analytics
+        -> Save analytics to database
+        -> Layer B Gemini auditing
+        -> Save AI audit to database
+    """
 
     statement = Statement.objects.get(id=statement_id)
-    statement.analytics = analytics
-    statement.audit_status = "auditing"
-    statement.save()
+
+    try:
+        analytics = run_audit(statement_id)
+
+        statement.analytics = analytics
+        statement.audit_status = "analytics_ready"
+        statement.save()
+
+        ai_result = generate_ai_audit(analytics)
+
+        statement.ai_audit = ai_result
+        statement.audit_status = "completed"
+        statement.save()
+
+        return {
+            "analytics": analytics,
+            "ai_audit": ai_result
+        }
+
+    except Exception as e:
+        statement.audit_status = "failed"
+        statement.save()
+        raise e 
 

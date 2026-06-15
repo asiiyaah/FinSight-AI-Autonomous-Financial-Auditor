@@ -102,9 +102,8 @@ def parse_statement(statement):
             {raw_text}
             """
 
-        # ADDED: AUTO-RETRY LOGIC FOR 503 / 429 ERRORS
-        max_retries = 3
-        retry_delay = 4  # Start by waiting 4 seconds
+        max_retries = 5
+        retry_delay = 8  
         response = None
 
         for attempt in range(max_retries):
