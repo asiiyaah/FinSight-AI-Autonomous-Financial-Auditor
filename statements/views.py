@@ -5,8 +5,81 @@ from rest_framework.permissions import IsAuthenticated
 from .models import Statement
 from .parser import parse_statement
 from audits.audit_engine import run_full_audit
+from .serializers import StatementListSerializer
+from rest_framework.pagination import PageNumberPagination
+
 
 # Create your views here.
+
+class StatementListView(APIView):
+    permission_classes=[IsAuthenticated]
+
+    def get(self,request):
+        
+        statements=Statement.objects.filter(user=request.user).order_by("-uploaded_at")
+        paginator = PageNumberPagination()
+        paginated_statements = paginator.paginate_queryset(statements, request)
+        serializer=StatementListSerializer(paginated_statements , many = True)
+        
+        return paginator.get_paginated_response(serializer.data)
+
+class StatementDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, statement_id):
+        try:
+            statement = Statement.objects.get(
+                id=statement_id,
+                user=request.user
+            )
+        except Statement.DoesNotExist:
+            return Response(
+                {"error": "Statement not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        audit_context = statement.analytics.get("audit_context", {})
+
+        response_data = {
+            "statement": {
+                "id": statement.id,
+                "file_name": statement.file_name,
+                "uploaded_at": statement.uploaded_at,
+                "audit_status": statement.audit_status,
+                "transaction_count": audit_context.get("transaction_count"),
+                "duration_days": audit_context.get("duration_days"),
+                "file_url": statement.file.url if statement.file else None,
+            },
+            "analytics": statement.analytics,
+            "ai_audit": statement.ai_audit,
+        }
+
+        return Response(response_data, status=status.HTTP_200_OK)
+
+def delete(self, request, statement_id):
+    try:
+        statement = Statement.objects.get(
+            id=statement_id,
+            user=request.user
+        )
+    except Statement.DoesNotExist:
+        return Response(
+            {"error": "Statement not found"},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+    # Delete uploaded file from media folder
+    if statement.file:
+        statement.file.delete(save=False)
+
+    statement.delete()
+
+    return Response(
+        {"message": "Statement deleted successfully"},
+        status=status.HTTP_200_OK
+    )
+
+
 class StatementUploadView(APIView):
     permission_classes=[IsAuthenticated]
 
