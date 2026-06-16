@@ -90,16 +90,13 @@ class StatementUploadView(APIView):
             return Response({"error:FILE NOT PROVIDED"},status=status.HTTP_400_BAD_REQUEST)
         
         file_name=file.name
-        if not file_name.endswith('.csv') and not file_name.endswith('.pdf'):
-            return Response({"error": "Only CSV and PDF files are allowed"}, status=status.HTTP_400_BAD_REQUEST)
-    
-        file_type = 'csv' if file_name.endswith('.csv') else 'pdf'
+        if not file_name.endswith('.pdf'):
+            return Response({"error": "Only PDF files are allowed"}, status=status.HTTP_400_BAD_REQUEST)
 
         statement=Statement.objects.create(
             user=request.user,
             file=file,
             file_name=file_name,
-            file_type=file_type,
         )
         count=parse_statement(statement)
 
@@ -120,7 +117,6 @@ class StatementUploadView(APIView):
             "message": "Statement uploaded successfully",
             "statement_id": statement.id,
             "file_name": statement.file_name,
-            "file_type": statement.file_type,
             "uploaded_at": statement.uploaded_at,
             "transactions_parsed": count,
             },status=status.HTTP_200_OK

@@ -6,7 +6,6 @@ class Statement(models.Model):
     user=models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE)
     file=models.FileField(upload_to='statements/')
     file_name = models.CharField(max_length=255)
-    file_type = models.CharField(max_length=10)
     uploaded_at = models.DateTimeField(auto_now_add=True)
     is_parsed = models.BooleanField(default=False)
     audit_status = models.CharField(
