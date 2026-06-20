@@ -59,7 +59,8 @@ registerForm.addEventListener("submit", async (event) => {
         if (response.ok) {
             localStorage.setItem("access_token", data.access);
             localStorage.setItem("refresh_token", data.refresh);
-            
+            localStorage.setItem("is_new_user", "true");
+
             window.location.href = "dashboard.html";
         } else {
             console.log(data);
@@ -99,6 +100,7 @@ loginForm.addEventListener("submit", async (event) => {
         if (response.ok) {
             localStorage.setItem("access_token", data.access);
             localStorage.setItem("refresh_token", data.refresh);
+            localStorage.setItem("is_new_user", "false");
 
 
             window.location.href = "dashboard.html";
