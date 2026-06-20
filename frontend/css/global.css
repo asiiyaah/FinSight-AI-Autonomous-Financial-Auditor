@@ -1,0 +1,93 @@
+:root {
+    /* ===== COLORS ===== */
+    --bg-primary: #0B0F0C;
+    --bg-secondary: #151A16;
+    --card-bg: #1A211C;
+
+    --primary: #C7F464;
+    --primary-dark: #A8E63A;
+    --primary-glow: rgba(199, 244, 100, 0.25);
+
+    --text-primary: #FFFFFF;
+    --text-secondary: #B7BDB8;
+
+    --danger: #FF5C5C;
+    --warning: #FFC857;
+    --success: #5BE37D;
+
+    --border: rgba(255, 255, 255, 0.08);
+
+    /* ===== FONTS ===== */
+    --font-brand: "Audiowide", sans-serif;
+    --font-main: "Inter", sans-serif;
+
+    /* ===== SHADOWS ===== */
+    --glow-shadow: 0 0 20px rgba(199, 244, 100, 0.15);
+    --card-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+
+    /* ===== RADIUS ===== */
+    --radius-card: 24px;
+    --radius-pill: 999px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: var(--font-main);
+    min-height: 100vh;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+.brand-logo {
+    font-family: var(--font-brand);
+    color: var(--primary);
+    letter-spacing: 2px;
+}
+
+.glow-card {
+    background: var(--card-bg);
+    border-radius: var(--radius-card);
+    box-shadow: var(--card-shadow);
+    border: 1px solid var(--border);
+}
+
+.primary-btn {
+    background: var(--primary);
+    color: black;
+    border: none;
+    padding: 12px 24px;
+    border-radius: var(--radius-pill);
+    font-weight: 600;
+    transition: 0.3s ease;
+}
+
+.primary-btn:hover {
+    background: var(--primary-dark);
+    box-shadow: var(--glow-shadow);
+}
+
+.text-muted-custom {
+    color: var(--text-secondary);
+}
+
+.high-risk {
+    color: var(--danger);
+}
+
+.medium-risk {
+    color: var(--warning);
+}
+
+.low-risk {
+    color: var(--success);
+}

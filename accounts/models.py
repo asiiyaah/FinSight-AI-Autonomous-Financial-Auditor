@@ -5,5 +5,4 @@ from django.contrib.auth.models import AbstractUser
 # allows us to add custom fields (like profile pics or phone numbers)
 # in the future without wiping or breaking the database.
 class CustomUser(AbstractUser):
-    pass
-
+    email = models.EmailField(unique=True)

@@ -22,9 +22,6 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-ugn+ns#*!&t=+!$h^9d*btkyxbji-t8!d9i+%tqliqe23=bkg2'
-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -92,7 +89,7 @@ DATABASES = {
     }
 }
 
-
+DEBUG=True
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
 
@@ -155,3 +152,5 @@ from dotenv import load_dotenv
 
 load_dotenv()
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+
+SECRET_KEY = os.environ.get("SECRET_KEY")
