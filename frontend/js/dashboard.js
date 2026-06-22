@@ -43,10 +43,6 @@ async function loadUser() {
 
     } catch (error) {
         console.error(error);
-
-        if (existingUserSection) {
-            existingUserSection.classList.remove("d-none");
-        }
     }
 }
 
@@ -58,4 +54,18 @@ logoutBtn.addEventListener("click", () => {
     localStorage.removeItem("is_new_user");
 
     window.location.href = "index.html";
+});
+
+
+const uploadBtn = document.getElementById("upload-btn");
+const statementsBtn = document.querySelector("#statements-card button");
+
+uploadBtn.addEventListener("click", () => {
+    console.log("UPLOAD CLICKED");
+    window.location.href = "upload.html";
+});
+
+statementsBtn.addEventListener("click", () => {
+    console.log("STATEMENTS CLICKED");
+    window.location.href = "statements.html";
 });

@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Upload Statement | FinSight</title>
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Audiowide&family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="css/global.css" />
+    <link rel="stylesheet" href="css/upload.css" />
+  </head>
+  <body>
+    <nav class="dashboard-nav px-4 py-3">
+      <div class="nav-logo">
+        <a href="dashboard.html" class="brand-logo">FinSight</a>
+      </div>
+
+      <div class="nav-center">
+        <div class="nav-pill">
+          <a href="dashboard.html" class="nav-link-custom">Dashboard</a>
+          <a href="statements.html" class="nav-link-custom">My Statements</a>
+        </div>
+      </div>
+
+      <div class="nav-right">
+        <button id="logout-btn" class="primary-btn">Logout</button>
+      </div>
+    </nav>
+
+    <div class="upload-page">
+      <div class="upload-card glow-card">
+        <h2>Upload Bank Statement</h2>
+        <p class="text-muted-custom">Secure AI-powered financial analysis</p>
+
+        <div id="drop-zone" class="drop-zone">
+          <div class="upload-icon">📄</div>
+          <p>Drag & Drop PDF here</p>
+          <span>or click to browse</span>
+          <input type="file" id="file-input" accept=".pdf" hidden />
+        </div>
+
+        <div id="file-name" class="file-name">No file selected</div>
+
+        <button id="upload-btn" class="primary-btn upload-btn">
+          Upload Statement
+        </button>
+
+        <div id="status-box" class="status-box"></div>
+      </div>
+    </div>
+
+    <script src="js/upload.js"></script>
+  </body>
+</html>
