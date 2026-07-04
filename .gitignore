@@ -9,3 +9,5 @@ media/
 .env.*.local
 
 generate_data.py
+.vscode/
+test_redaction.py

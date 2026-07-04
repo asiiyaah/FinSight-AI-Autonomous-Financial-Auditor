@@ -38,6 +38,17 @@ class StatementDetailView(APIView):
                 status=status.HTTP_404_NOT_FOUND
             )
 
+        # Compute Layer A deterministic analytics if they don't exist yet
+        if statement.is_parsed and (not statement.analytics or "audit_context" not in statement.analytics):
+            from audits.audit_engine import run_audit
+            try:
+                statement.analytics = run_audit(statement.id)
+                if statement.audit_status == "uploaded":
+                    statement.audit_status = "analytics_ready"
+                statement.save()
+            except Exception as e:
+                print(f"Error computing analytics on-the-fly: {e}")
+
         audit_context = statement.analytics.get("audit_context", {})
 
         response_data = {
@@ -87,7 +98,7 @@ class StatementUploadView(APIView):
         file=request.FILES.get('file')
 
         if not file:
-            return Response({"error:FILE NOT PROVIDED"},status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "FILE NOT PROVIDED"},status=status.HTTP_400_BAD_REQUEST)
         
         file_name=file.name
         if not file_name.endswith('.pdf'):

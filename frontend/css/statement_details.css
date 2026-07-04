@@ -1,0 +1,281 @@
+/* ===== STATEMENT DETAILS CUSTOM STYLES ===== */
+
+/* Navigation Back link */
+.back-link {
+    color: var(--text-secondary);
+    font-weight: 500;
+    transition: 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.back-link:hover {
+    color: var(--primary);
+    text-shadow: 0 0 10px rgba(199, 244, 100, 0.4);
+}
+
+/* Sidebar Styling */
+.detail-sidebar {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    position: sticky;
+    top: 20px;
+}
+
+.pdf-icon-wrapper {
+    width: 80px;
+    height: 80px;
+    background: rgba(199, 244, 100, 0.08);
+    border: 1px solid rgba(199, 244, 100, 0.3);
+    border-radius: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    color: var(--primary);
+    box-shadow: 0 0 20px rgba(199, 244, 100, 0.1);
+}
+
+.doc-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin: 10px 0 0;
+    word-break: break-all;
+}
+
+.card-divider {
+    border-top: 1px solid var(--border);
+    margin: 20px 0;
+    opacity: 1;
+}
+
+/* Info Item Key Value */
+.info-list .info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+}
+
+.info-label {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.info-value {
+    color: var(--text-primary);
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+/* AI Audit Findings Visuals */
+.risk-badge {
+    padding: 8px 16px;
+    font-family: var(--font-brand);
+    font-size: 0.9rem;
+    border-radius: var(--radius-pill);
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+.risk-badge.LOW {
+    background: rgba(91, 227, 125, 0.15);
+    color: var(--success);
+    border: 1px solid var(--success);
+    box-shadow: 0 0 15px rgba(91, 227, 125, 0.2);
+}
+
+.risk-badge.MODERATE {
+    background: rgba(255, 200, 87, 0.15);
+    color: var(--warning);
+    border: 1px solid var(--warning);
+    box-shadow: 0 0 15px rgba(255, 200, 87, 0.2);
+}
+
+.risk-badge.HIGH {
+    background: rgba(255, 92, 92, 0.15);
+    color: var(--danger);
+    border: 1px solid var(--danger);
+    box-shadow: 0 0 15px rgba(255, 92, 92, 0.2);
+}
+
+.lead-text {
+    font-size: 1.05rem;
+    color: var(--text-primary);
+    line-height: 1.6;
+}
+
+.finding-group {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border);
+    height: 100%;
+}
+
+.finding-list {
+    list-style-type: none;
+    padding-left: 0;
+    margin-top: 12px;
+}
+
+.finding-list li {
+    position: relative;
+    padding-left: 20px;
+    margin-bottom: 10px;
+    font-size: 0.92rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+.finding-list li::before {
+    content: "•";
+    position: absolute;
+    left: 5px;
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+#ai-strengths li::before {
+    color: var(--success);
+}
+
+#ai-concerns li::before {
+    color: var(--warning);
+}
+
+.suspicious-list li::before {
+    content: "⚠️";
+    font-size: 0.8rem;
+    left: 0;
+}
+
+.suspicious-list li {
+    padding-left: 22px;
+}
+
+.recommendation-list li::before {
+    content: "👉";
+    font-size: 0.8rem;
+    left: 0;
+}
+
+.recommendation-list li {
+    padding-left: 22px;
+}
+
+.verdict-text {
+    font-style: italic;
+    color: var(--text-secondary);
+    border-left: 3px solid var(--primary);
+    padding-left: 15px;
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* Cashflow layout */
+.cashflow-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border);
+    transition: 0.3s ease;
+}
+
+.cashflow-card:hover {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Category lists */
+.category-breakdown-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.category-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.category-item-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.92rem;
+}
+
+.progress-custom {
+    height: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress-bar-custom {
+    height: 100%;
+    background: var(--primary);
+    border-radius: 10px;
+}
+
+/* Deterministic Risk tab styling */
+.custom-tabs.nav-tabs {
+    border-bottom: 1px solid var(--border);
+}
+
+.custom-tabs .nav-link {
+    color: var(--text-secondary);
+    border: none;
+    background: transparent;
+    padding: 10px 16px;
+    font-weight: 500;
+    transition: 0.2s ease;
+}
+
+.custom-tabs .nav-link:hover {
+    color: var(--primary);
+}
+
+.custom-tabs .nav-link.active {
+    color: var(--primary);
+    background: transparent;
+    border-bottom: 2px solid var(--primary);
+}
+
+.risk-info-list {
+    min-height: 120px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.risk-info-item {
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.01);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 8px;
+}
+
+.risk-info-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Custom scrollbar for risk lists */
+.risk-info-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.risk-info-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.risk-info-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+
+.risk-info-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+}

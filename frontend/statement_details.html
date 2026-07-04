@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Statement Details | FinSight</title>
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+      rel="stylesheet"
+    />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Audiowide&family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="css/global.css?v=1.1" />
+    <link rel="stylesheet" href="css/statement_details.css" />
+  </head>
+  <body>
+    <nav class="dashboard-nav px-4 py-3">
+      <div class="nav-logo">
+        <a href="dashboard.html" class="brand-logo">FinSight</a>
+      </div>
+
+      <div class="nav-center">
+        <div class="nav-pill">
+          <a href="dashboard.html" class="nav-link-custom">Dashboard</a>
+          <a href="upload.html" class="nav-link-custom">Upload</a>
+        </div>
+      </div>
+
+      <div class="nav-right">
+        <button id="logout-btn" class="primary-btn">Logout</button>
+      </div>
+    </nav>
+
+    <div class="container py-5">
+      <!-- Back navigation link -->
+      <div class="mb-4">
+        <a href="dashboard.html" class="back-link"><i class="bi bi-arrow-left"></i> Back to Dashboard</a>
+      </div>
+
+      <div class="row g-4">
+        <!-- Sidebar: Statement Summary Info -->
+        <div class="col-lg-4">
+          <div class="glow-card detail-sidebar p-4 h-100">
+            <div class="text-center mb-4">
+              <div class="pdf-icon-wrapper mb-3">
+                <i class="bi bi-file-earmark-pdf"></i>
+              </div>
+              <h3 id="doc-title" class="doc-title">Loading Statement...</h3>
+              <span id="doc-status-badge" class="badge bg-secondary mt-2">Checking status</span>
+            </div>
+
+            <hr class="card-divider" />
+
+            <div class="info-list mt-4">
+              <div class="info-item mb-3">
+                <span class="info-label">Uploaded At</span>
+                <span id="info-uploaded-at" class="info-value">-</span>
+              </div>
+              <div class="info-item mb-3">
+                <span class="info-label">Parsing Status</span>
+                <span id="info-parsing-status" class="info-value">-</span>
+              </div>
+              <div class="info-item mb-3">
+                <span class="info-label">Transactions Extracted</span>
+                <span id="info-tx-count" class="info-value">-</span>
+              </div>
+              <div class="info-item mb-3">
+                <span class="info-label">AI Audit Status</span>
+                <span id="info-audit-status" class="info-value">-</span>
+              </div>
+            </div>
+
+            <div class="audit-action-zone text-center mt-5">
+              <button id="run-audit-btn" class="primary-btn w-100 py-3">
+                <i class="bi bi-cpu me-2"></i> Run AI Audit
+              </button>
+              <p id="audit-helper-text" class="text-muted-custom mt-2 mb-0 small">Upload already parsed the statement. Click here to generate AI audit findings.</p>
+              <div id="audit-progress" class="mt-3 d-none">
+                <div class="spinner-border text-primary" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="text-muted-custom mt-2 mb-0">Generating AI audit report. This may take a few seconds...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Main Content Area: Analytics and AI Audit Findings -->
+        <div class="col-lg-8">
+          <!-- Loading placeholder for statement content -->
+          <div id="loading-state" class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="text-muted-custom mt-3">Loading statement details...</p>
+          </div>
+
+          <!-- Main details dashboard (initially hidden) -->
+          <div id="details-content" class="d-none">
+            <!-- AI Audit Results Section -->
+            <div id="ai-audit-section" class="glow-card p-4 mb-4 d-none">
+              <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="m-0"><i class="bi bi-shield-check text-primary me-2"></i>AI Audit Findings</h4>
+                <span id="ai-risk-badge" class="risk-badge">LOW RISK</span>
+              </div>
+
+              <div class="mb-4">
+                <h6 class="text-muted-custom font-brand text-uppercase mb-2">Overall Summary</h6>
+                <p id="ai-summary" class="lead-text">-</p>
+              </div>
+
+              <div class="row g-4 mb-4">
+                <div class="col-md-6">
+                  <div class="finding-group p-3 rounded">
+                    <h6 class="text-success"><i class="bi bi-plus-circle-fill me-2"></i>Strengths</h6>
+                    <ul id="ai-strengths" class="finding-list"></ul>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="finding-group p-3 rounded">
+                    <h6 class="text-warning"><i class="bi bi-exclamation-triangle-fill me-2"></i>Concerns</h6>
+                    <ul id="ai-concerns" class="finding-list"></ul>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mb-4">
+                <h6 class="text-danger"><i class="bi bi-shield-slash-fill me-2"></i>Suspicious Activity</h6>
+                <ul id="ai-suspicious" class="finding-list suspicious-list"></ul>
+              </div>
+
+              <div class="mb-4">
+                <h6 class="text-primary"><i class="bi bi-check2-square me-2"></i>Actionable Recommendations</h6>
+                <ul id="ai-recommendations" class="finding-list recommendation-list"></ul>
+              </div>
+
+              <hr class="card-divider" />
+
+              <div class="mt-4">
+                <h6 class="text-muted-custom font-brand text-uppercase mb-2">Final Verdict</h6>
+                <p id="ai-verdict" class="verdict-text">-</p>
+              </div>
+            </div>
+
+            <!-- Layer A: Financial Cashflow & Summary Metrics -->
+            <div class="row g-4 mb-4">
+              <div class="col-md-6">
+                <div class="glow-card p-4 h-100">
+                  <h5 class="mb-3"><i class="bi bi-cash-stack text-primary me-2"></i>Cashflow Analytics</h5>
+                  <div class="cashflow-grid">
+                    <div class="cashflow-card p-3 mb-2 rounded bg-opacity-25">
+                      <span class="text-muted-custom d-block font-size-sm">Total Credit (Income)</span>
+                      <h4 id="stat-total-credit" class="text-success m-0">$0.00</h4>
+                    </div>
+                    <div class="cashflow-card p-3 mb-2 rounded bg-opacity-25">
+                      <span class="text-muted-custom d-block font-size-sm">Total Debit (Spending)</span>
+                      <h4 id="stat-total-debit" class="text-danger m-0">$0.00</h4>
+                    </div>
+                    <div class="cashflow-card p-3 mb-2 rounded bg-opacity-25">
+                      <span class="text-muted-custom d-block font-size-sm">Net Savings</span>
+                      <h4 id="stat-net-savings" class="m-0">$0.00</h4>
+                    </div>
+                    <div class="cashflow-card p-3 rounded bg-opacity-25">
+                      <span class="text-muted-custom d-block font-size-sm">Savings Rate</span>
+                      <h4 id="stat-savings-rate" class="text-primary m-0">0%</h4>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Spending Category breakdown -->
+              <div class="col-md-6">
+                <div class="glow-card p-4 h-100">
+                  <h5 class="mb-3"><i class="bi bi-pie-chart text-primary me-2"></i>Spending Categories</h5>
+                  <div id="category-breakdown-list" class="category-breakdown-list">
+                    <!-- Categories will be generated here -->
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Risks & Anomaly Detection Panel -->
+            <div class="glow-card p-4 mb-4">
+              <h5 class="mb-4"><i class="bi bi-exclamation-octagon text-primary me-2"></i>Deterministic Risk Detection</h5>
+
+              <ul class="nav nav-tabs custom-tabs mb-3" id="riskTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                  <button class="nav-link active" id="anomalies-tab" data-bs-toggle="tab" data-bs-target="#anomalies-panel" type="button" role="tab">Anomalies</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                  <button class="nav-link" id="duplicates-tab" data-bs-toggle="tab" data-bs-target="#duplicates-panel" type="button" role="tab">Duplicates</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                  <button class="nav-link" id="subscriptions-tab" data-bs-toggle="tab" data-bs-target="#subscriptions-panel" type="button" role="tab">Subscriptions</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                  <button class="nav-link" id="emi-tab" data-bs-toggle="tab" data-bs-target="#emi-panel" type="button" role="tab">Loans & EMIs</button>
+                </li>
+              </ul>
+
+              <div class="tab-content" id="riskTabsContent">
+                <!-- Anomalies Panel -->
+                <div class="tab-pane fade show active" id="anomalies-panel" role="tabpanel">
+                  <div id="anomalies-list" class="risk-info-list pt-2">
+                    <p class="text-muted-custom">No anomalies detected.</p>
+                  </div>
+                </div>
+
+                <!-- Duplicates Panel -->
+                <div class="tab-pane fade" id="duplicates-panel" role="tabpanel">
+                  <div id="duplicates-list" class="risk-info-list pt-2">
+                    <p class="text-muted-custom">No duplicate charges detected.</p>
+                  </div>
+                </div>
+
+                <!-- Subscriptions Panel -->
+                <div class="tab-pane fade" id="subscriptions-panel" role="tabpanel">
+                  <div id="subscriptions-list" class="risk-info-list pt-2">
+                    <p class="text-muted-custom">No active subscriptions detected.</p>
+                  </div>
+                </div>
+
+                <!-- Loan / EMIs Panel -->
+                <div class="tab-pane fade" id="emi-panel" role="tabpanel">
+                  <div id="emi-list" class="risk-info-list pt-2">
+                    <p class="text-muted-custom">No loan EMIs detected.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/statement_details.js"></script>
+  </body>
+</html>

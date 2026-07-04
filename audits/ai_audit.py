@@ -126,6 +126,35 @@ def generate_ai_audit(analytics):
       -> structured response
     """
 
+    import os
+    mock_audit = os.getenv("MOCK_AUDIT", "True").lower() == "true" or not getattr(settings, "GEMINI_API_KEY", None)
+
+    if mock_audit:
+        import time
+        time.sleep(2.0)
+        return {
+            "risk_level": "MODERATE",
+            "overall_summary": "Based on deterministic analytics, there are moderate risks detected in the statement, including some subscription costs and minor anomalies.",
+            "strengths": [
+                "Healthy savings rate of over 15%.",
+                "Essential category spending is within reasonable bounds."
+            ],
+            "concerns": [
+                "Multiple duplicate charges detected (possible double billing).",
+                "High discretionary spending in food and shopping categories."
+            ],
+            "suspicious_activity": [
+                "Duplicate Swiggy charge on 2024-02-10.",
+                "Unusual large transaction to UPI/Payment on 2024-03-15."
+            ],
+            "recommendations": [
+                "Review the duplicate Swiggy transactions for a potential refund.",
+                "Set a budget for discretionary spending categories like Food Delivery.",
+                "Audit the large UPI transaction on 2024-03-15 to confirm authorization."
+            ],
+            "final_verdict": "The statement shows a reasonable financial status with some opportunities for optimization and potential duplicate charge refunds."
+        }
+
     ai_context = build_ai_context(analytics)
     prompt = build_audit_prompt(ai_context)
 

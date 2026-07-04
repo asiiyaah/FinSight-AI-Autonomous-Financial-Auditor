@@ -4,6 +4,7 @@ from .models import Transaction
 from google import genai
 from django.conf import settings
 import time
+import re
 
 from pydantic import BaseModel,Field
 
@@ -24,12 +25,92 @@ class StatementData(BaseModel):
     transactions: list[ExtractedTransaction]
 
 
+def redact_sensitive_info(text: str) -> str:
+    """
+    Sanitize raw statement text to remove sensitive PII (emails, names, phone numbers,
+    PAN, Aadhaar, account numbers) before transmission to external APIs.
+    """
+    # 1. Redact Customer Names / Account Names in headers (using non-newline whitespace [ \t])
+    text = re.sub(
+        r'(?i)(customer name|a/c holder|account name|holder|name)\s*:\s*([a-zA-Z \t]+)',
+        lambda m: f"{m.group(1)}: [NAME_REDACTED]",
+        text
+    )
+    
+    # 2. Redact Addresses in headers
+    text = re.sub(
+        r'(?i)(address|residence|location)\s*:\s*([a-zA-Z0-9, \t\.\-\#\/]+)',
+        lambda m: f"{m.group(1)}: [ADDRESS_REDACTED]",
+        text
+    )
+    
+    # 3. Redact Email Addresses
+    text = re.sub(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b', '[EMAIL_REDACTED]', text)
+    
+    # 4. Redact Phone / Mobile Numbers (matching optional leading + and country code prefixes)
+    text = re.sub(r'\+?\b(?:\+?91|0)?[6-9]\d{9}\b', '[PHONE_REDACTED]', text)
+    
+    # 5. Redact Indian IFSC Codes
+    text = re.sub(r'\b[A-Z]{4}0[A-Z0-9]{6}\b', '[IFSC_REDACTED]', text)
+    
+    # 6. Redact PAN Card Numbers
+    text = re.sub(r'\b[A-Z]{5}[0-9]{4}[A-Z]\b', '[PAN_REDACTED]', text)
+    
+    # 7. Redact Aadhaar Numbers
+    text = re.sub(r'\b\d{4}\s\d{4}\s\d{4}\b', '[AADHAAR_REDACTED]', text)
+    text = re.sub(r'\b\d{12}\b', '[AADHAAR_REDACTED]', text)
+    
+    # 8. Redact Potential Account Numbers / Credit Card Numbers (9 to 18 digits)
+    text = re.sub(r'\b\d{9,18}\b', '[ACCOUNT_REDACTED]', text)
+    
+    return text
+
+
 # =========================================================
 def parse_statement(statement):
     file_path = statement.file.path
 
     if not statement.file.name.lower().endswith('.pdf'):
         raise ValueError("Only PDF files supported")
+
+    import os
+    mock_parser = os.getenv("MOCK_PARSER", "True").lower() == "true" or not getattr(settings, "GEMINI_API_KEY", None)
+
+    if mock_parser:
+        import time
+        time.sleep(1.5)
+        
+        from .generate_data import generate_transactions
+        import pandas as pd
+        
+        mock_txs = generate_transactions()
+        parsed_count = 0
+        for tx in mock_txs:
+            extracted_date = pd.to_datetime(tx["date"]).date()
+            extracted_vendor = tx["vendor"].strip() if tx["vendor"] else "Unknown"
+            extracted_amount = tx["amount"]
+            extracted_category = tx["category"].strip() if tx["category"] else "Other"
+            
+            extracted_type = "debit"
+            if extracted_category == "Income":
+                extracted_type = "credit"
+            
+            Transaction.objects.create(
+                statement=statement,
+                date=extracted_date,
+                vendor=extracted_vendor,
+                amount=extracted_amount,
+                category=extracted_category,
+                transaction_type=extracted_type,
+                raw_description=f"MOCK: {extracted_vendor}"
+            )
+            parsed_count += 1
+            
+        if parsed_count > 0:
+            statement.is_parsed = True
+            statement.save()
+            
+        return parsed_count
 
     raw_text = ""
     try:
@@ -44,6 +125,9 @@ def parse_statement(statement):
 
     if not raw_text.strip():
         return 0
+
+    # Redact sensitive PII before transmitting to external API
+    redacted_text = redact_sensitive_info(raw_text)
 
     # SEND TO GEMINI & SAVE TO DATABASE
     client = genai.Client(api_key=settings.GEMINI_API_KEY)
@@ -73,7 +157,7 @@ def parse_statement(statement):
         3. Preserve original transaction text in raw_description.
 
         Bank statement text:
-        {raw_text}
+        {redacted_text}
         """
 
     max_retries = 5

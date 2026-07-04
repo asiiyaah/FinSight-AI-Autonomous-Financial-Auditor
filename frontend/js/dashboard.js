@@ -59,6 +59,7 @@ logoutBtn.addEventListener("click", () => {
 
 const uploadBtn = document.getElementById("upload-btn");
 const statementsBtn = document.querySelector("#statements-card button");
+const getStartedBtn = document.getElementById("get-started-btn");
 
 uploadBtn.addEventListener("click", () => {
     console.log("UPLOAD CLICKED");
@@ -69,3 +70,9 @@ statementsBtn.addEventListener("click", () => {
     console.log("STATEMENTS CLICKED");
     window.location.href = "statements.html";
 });
+
+if (getStartedBtn) {
+    getStartedBtn.addEventListener("click", () => {
+        window.location.href = "upload.html";
+    });
+}
