@@ -11,3 +11,4 @@ media/
 generate_data.py
 .vscode/
 test_redaction.py
+skills/

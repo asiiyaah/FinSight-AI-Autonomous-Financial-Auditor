@@ -3,74 +3,143 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>FinSight Dashboard</title>
+    <title>Dashboard | FinSight</title>
 
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
 
-    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Audiowide&family=Inter:wght@300;400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
+    <link href="https://fonts.googleapis.com/css2?family=Audiowide&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 
     <link rel="stylesheet" href="css/global.css" />
     <link rel="stylesheet" href="css/dashboard.css" />
   </head>
   <body>
     <nav class="dashboard-nav px-4 py-3">
-      <a href="dashboard.html" class="brand-logo">FinSight</a>
-      <button id="logout-btn" class="primary-btn">Logout</button>
+      <div class="nav-logo">
+        <a href="dashboard.html" class="brand-logo">FinSight</a>
+      </div>
+      <div class="nav-center">
+        <div class="nav-pill">
+          <a href="dashboard.html" class="nav-link-custom active-link">Dashboard</a>
+          <a href="upload.html" class="nav-link-custom">Upload</a>
+          <a href="statements.html" class="nav-link-custom">My Statements</a>
+        </div>
+      </div>
+      <div class="nav-right">
+        <button id="logout-btn" class="primary-btn">Logout</button>
+      </div>
     </nav>
+
     <div class="container py-5">
+
       <!-- NEW USER SECTION -->
       <div id="new-user-section" class="d-none">
         <section class="glow-card hero-card text-center">
-          <h2 id="new-user-welcome">Welcome!</h2>
-
-          <p class="text-muted-custom mt-3">
-            Get started by uploading your first statement and let FinSight
-            analyze your finances with AI.
+          <div class="hero-icon mb-3"><i class="bi bi-stars"></i></div>
+          <h2 id="new-user-welcome">Welcome to FinSight!</h2>
+          <p class="text-muted-custom mt-3 mb-4">
+            Get started by uploading your first bank statement. FinSight will extract your transactions and generate AI-powered financial insights.
           </p>
-
-          <button id="get-started-btn" class="primary-btn mt-3 px-5">Get Started</button>
+          <a href="upload.html" id="get-started-btn" class="primary-btn px-5 py-3">
+            <i class="bi bi-cloud-upload me-2"></i>Upload Your First Statement
+          </a>
         </section>
       </div>
 
       <!-- EXISTING USER SECTION -->
       <div id="existing-user-section" class="d-none">
-        <section class="glow-card hero-card">
-          <h2 id="welcome-text">Welcome back!</h2>
-          <p class="text-muted-custom mb-0">
-            Your AI-powered financial intelligence hub is ready.
-          </p>
+
+        <!-- Welcome Hero -->
+        <section class="glow-card hero-card mb-4">
+          <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+            <div>
+              <h2 id="welcome-text">Welcome back!</h2>
+              <p class="text-muted-custom mb-0">Your AI-powered financial intelligence hub.</p>
+            </div>
+            <a href="upload.html" class="primary-btn">
+              <i class="bi bi-plus-lg me-2"></i>Upload Statement
+            </a>
+          </div>
         </section>
 
-        <div class="row g-4 mt-4 justify-content-center">
-          <div class="col-md-6">
-            <div id="upload-card" class="glow-card dashboard-card">
-              <h4>Upload Statement</h4>
-              <p class="text-muted-custom">
-                Upload bank statements for AI analysis.
-              </p>
-              <button id="upload-btn" class="primary-btn w-100">Upload</button>
+        <!-- Stats Row -->
+        <div class="row g-3 mb-4">
+          <div class="col-6 col-md-3">
+            <div class="stat-card glow-card p-3 text-center">
+              <div class="stat-icon"><i class="bi bi-files"></i></div>
+              <div id="stat-total" class="stat-value">—</div>
+              <div class="stat-label">Total Statements</div>
             </div>
           </div>
-
-          <div class="col-md-6">
-            <div id="statements-card" class="glow-card dashboard-card">
-              <h4>My Statements</h4>
-              <p class="text-muted-custom">
-                View uploaded statements and their AI audits.
-              </p>
-              <button class="primary-btn w-100">View</button>
+          <div class="col-6 col-md-3">
+            <div class="stat-card glow-card p-3 text-center">
+              <div class="stat-icon text-success"><i class="bi bi-patch-check-fill"></i></div>
+              <div id="stat-audited" class="stat-value text-success">—</div>
+              <div class="stat-label">Audits Completed</div>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="stat-card glow-card p-3 text-center">
+              <div class="stat-icon text-warning"><i class="bi bi-hourglass-split"></i></div>
+              <div id="stat-pending" class="stat-value text-warning">—</div>
+              <div class="stat-label">Pending Audit</div>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="stat-card glow-card p-3 text-center">
+              <div class="stat-icon" style="color: var(--primary)"><i class="bi bi-calendar3-event"></i></div>
+              <div id="stat-last-upload" class="stat-value" style="font-size:0.9rem">—</div>
+              <div class="stat-label">Last Upload</div>
             </div>
           </div>
         </div>
+
+        <!-- Recent Statements -->
+        <div class="glow-card p-4 mb-4">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="m-0"><i class="bi bi-clock-history me-2" style="color:var(--primary)"></i>Recent Statements</h5>
+            <a href="statements.html" class="view-all-link">View All <i class="bi bi-arrow-right"></i></a>
+          </div>
+
+          <div id="recent-loading" class="text-center py-3">
+            <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+          </div>
+
+          <div id="recent-empty" class="d-none text-center py-3">
+            <p class="text-muted-custom mb-0 small">No statements uploaded yet.</p>
+          </div>
+
+          <div id="recent-list" class="d-none">
+            <!-- Recent statement rows injected here -->
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="row g-3">
+          <div class="col-md-6">
+            <div id="upload-card" class="glow-card dashboard-card">
+              <div class="card-icon-header">
+                <i class="bi bi-cloud-upload-fill"></i>
+              </div>
+              <h4>Upload Statement</h4>
+              <p class="text-muted-custom">Upload a new bank statement PDF for AI analysis and transaction extraction.</p>
+              <button id="upload-btn" class="primary-btn w-100">Upload</button>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div id="statements-card" class="glow-card dashboard-card">
+              <div class="card-icon-header">
+                <i class="bi bi-collection-fill"></i>
+              </div>
+              <h4>My Statements</h4>
+              <p class="text-muted-custom">Browse all your uploaded statements, view analytics and AI audit reports.</p>
+              <button id="statements-btn" class="primary-btn w-100">View All</button>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
 

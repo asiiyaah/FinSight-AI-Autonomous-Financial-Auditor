@@ -1,0 +1,299 @@
+/* ===========================
+   statements.css — My Statements List Page
+   =========================== */
+
+/* Page Header */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.page-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 4px 0;
+}
+
+/* Statement Card */
+.statement-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 24px;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    height: 100%;
+    cursor: pointer;
+}
+
+.statement-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(199, 244, 100, 0.12);
+    border-color: rgba(199, 244, 100, 0.3);
+}
+
+/* Card Top Row */
+.card-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+}
+
+.file-icon-wrapper {
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: rgba(199, 244, 100, 0.1);
+    border: 1px solid rgba(199, 244, 100, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    color: var(--primary);
+}
+
+.card-title-block {
+    flex: 1;
+    min-width: 0;
+}
+
+.card-file-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 0 0 6px 0;
+}
+
+.card-upload-date {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+/* Status Badge */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 99px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.status-badge.uploaded {
+    background: rgba(183, 189, 184, 0.15);
+    color: var(--text-secondary);
+    border: 1px solid rgba(183, 189, 184, 0.2);
+}
+
+.status-badge.analytics_ready {
+    background: rgba(59, 130, 246, 0.15);
+    color: #60a5fa;
+    border: 1px solid rgba(59, 130, 246, 0.25);
+}
+
+.status-badge.completed {
+    background: rgba(91, 227, 125, 0.15);
+    color: var(--success);
+    border: 1px solid rgba(91, 227, 125, 0.25);
+}
+
+.status-badge.failed {
+    background: rgba(255, 92, 92, 0.15);
+    color: var(--danger);
+    border: 1px solid rgba(255, 92, 92, 0.25);
+}
+
+/* Stat Row */
+.card-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.card-stat {
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 12px;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+}
+
+.card-stat-label {
+    font-size: 0.73rem;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.card-stat-value {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* Card Actions */
+.card-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: auto;
+    padding-top: 4px;
+}
+
+.view-btn {
+    flex: 1;
+    background: var(--primary);
+    color: #000;
+    border: none;
+    border-radius: 99px;
+    padding: 9px 16px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.view-btn:hover {
+    background: var(--primary-dark);
+    box-shadow: 0 0 16px rgba(199, 244, 100, 0.3);
+    color: #000;
+}
+
+.delete-btn {
+    background: rgba(255, 92, 92, 0.1);
+    color: var(--danger);
+    border: 1px solid rgba(255, 92, 92, 0.2);
+    border-radius: 99px;
+    padding: 9px 14px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.delete-btn:hover {
+    background: rgba(255, 92, 92, 0.2);
+    border-color: rgba(255, 92, 92, 0.4);
+}
+
+/* Empty State */
+.empty-card {
+    max-width: 480px;
+    margin: 0 auto;
+}
+
+.empty-icon {
+    font-size: 4rem;
+    color: var(--text-secondary);
+    opacity: 0.5;
+}
+
+/* Pagination */
+.page-btn {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    padding: 10px 20px;
+    border-radius: 99px;
+    font-size: 0.88rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+.page-btn:hover:not(:disabled) {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.page-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+.page-info-text {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    min-width: 80px;
+    text-align: center;
+}
+
+/* Modal */
+.delete-modal-content {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    color: var(--text-primary);
+}
+
+.secondary-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    padding: 10px 22px;
+    border-radius: 99px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
+}
+
+.secondary-btn:hover {
+    border-color: var(--text-secondary);
+    color: var(--text-primary);
+}
+
+.danger-btn {
+    background: var(--danger);
+    color: #fff;
+    border: none;
+    padding: 10px 22px;
+    border-radius: 99px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: opacity 0.2s ease;
+}
+
+.danger-btn:hover {
+    opacity: 0.85;
+}
+
+.danger-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Active nav link */
+.active-link {
+    color: var(--primary) !important;
+    font-weight: 600;
+}

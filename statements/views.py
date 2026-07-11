@@ -67,28 +67,28 @@ class StatementDetailView(APIView):
 
         return Response(response_data, status=status.HTTP_200_OK)
 
-def delete(self, request, statement_id):
-    try:
-        statement = Statement.objects.get(
-            id=statement_id,
-            user=request.user
-        )
-    except Statement.DoesNotExist:
+    def delete(self, request, statement_id):
+        try:
+            statement = Statement.objects.get(
+                id=statement_id,
+                user=request.user
+            )
+        except Statement.DoesNotExist:
+            return Response(
+                {"error": "Statement not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Delete uploaded file from media folder
+        if statement.file:
+            statement.file.delete(save=False)
+
+        statement.delete()
+
         return Response(
-            {"error": "Statement not found"},
-            status=status.HTTP_404_NOT_FOUND
+            {"message": "Statement deleted successfully"},
+            status=status.HTTP_204_NO_CONTENT
         )
-
-    # Delete uploaded file from media folder
-    if statement.file:
-        statement.file.delete(save=False)
-
-    statement.delete()
-
-    return Response(
-        {"message": "Statement deleted successfully"},
-        status=status.HTTP_200_OK
-    )
 
 
 class StatementUploadView(APIView):
