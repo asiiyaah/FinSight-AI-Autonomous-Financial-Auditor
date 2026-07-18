@@ -29,6 +29,7 @@ urlpatterns = [
 
     path('api/v1/accounts/', include('accounts.urls')),
     path('api/v1/statements/', include('statements.urls')),
+    path('api/v1/', include('chatbot.urls')),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

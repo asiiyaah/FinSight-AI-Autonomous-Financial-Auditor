@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'accounts',
     'statements',
     'audits',
+    'chatbot',
 ]
 
 MIDDLEWARE = [
