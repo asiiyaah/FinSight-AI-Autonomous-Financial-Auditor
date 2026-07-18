@@ -49,7 +49,7 @@ class StatementDetailView(APIView):
             except Exception as e:
                 print(f"Error computing analytics on-the-fly: {e}")
 
-        audit_context = statement.analytics.get("audit_context", {})
+        audit_context = statement.analytics.get("audit_context", {}) if statement.analytics else {}
 
         response_data = {
             "statement": {
@@ -57,12 +57,12 @@ class StatementDetailView(APIView):
                 "file_name": statement.file_name,
                 "uploaded_at": statement.uploaded_at,
                 "audit_status": statement.audit_status,
-                "transaction_count": audit_context.get("transaction_count"),
-                "duration_days": audit_context.get("duration_days"),
+                "transaction_count": audit_context.get("transaction_count", 0),
+                "duration_days": audit_context.get("duration_days", 0),
                 "file_url": statement.file.url if statement.file else None,
             },
-            "analytics": statement.analytics,
-            "ai_audit": statement.ai_audit,
+            "analytics": statement.analytics if statement.analytics else {},
+            "ai_audit": statement.ai_audit if statement.ai_audit else {},
         }
 
         return Response(response_data, status=status.HTTP_200_OK)
@@ -152,7 +152,7 @@ class StatementAuditView(APIView):
 
         if not statement.is_parsed:
             return Response(
-                {"error": "Statement not parsed yet"},
+                {"error": "Statement not parsed yet. Please ensure the PDF was successfully uploaded and parsed before running the audit."},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -163,14 +163,16 @@ class StatementAuditView(APIView):
                 {
                     "message": "Audit completed successfully",
                     "statement_id": statement.id,
-                    "result": result
+                    "analytics": result.get("analytics", {}),
+                    "ai_audit": result.get("ai_audit", {})
                 },
                 status=status.HTTP_200_OK
             )
         except Exception as e:
             return Response(
                 {
-                    "error" : str(e) ,
+                    "error": "Failed to complete audit",
+                    "details": str(e)
                 },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )

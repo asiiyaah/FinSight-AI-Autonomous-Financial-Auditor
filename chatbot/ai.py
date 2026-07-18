@@ -68,11 +68,8 @@ def generate_response(prompt: str, user_message: str = "") -> str:
     Accepts user_message separately so the mock AI can inspect it without getting confused by prompt context.
     Never modifies the prompt or accesses the database.
     """
-    # Check Django settings first, fallback to os.environ. Default to True to protect API credits.
-    use_mock = getattr(settings, 'USE_MOCK_AI', None)
-    if use_mock is None:
-        use_mock_env = os.environ.get("USE_MOCK_AI", "True").strip().lower()
-        use_mock = use_mock_env in ("true", "1", "yes", "mock")
+    # Check Django settings for mock AI configuration
+    use_mock = getattr(settings, 'USE_MOCK_AI', True) or not getattr(settings, 'GEMINI_API_KEY', None)
         
     if use_mock:
         return _generate_mock_response(user_message)

@@ -6,9 +6,10 @@ db.sqlite3
 media/
 .env
 .env.local
-.env.*.local
+.env.*.local    
 
 generate_data.py
 .vscode/
 test_redaction.py
 skills/
+docs/

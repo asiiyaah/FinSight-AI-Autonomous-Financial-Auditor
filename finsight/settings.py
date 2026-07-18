@@ -153,5 +153,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+USE_MOCK_AI = os.environ.get("USE_MOCK_AI", "True").lower() in ("true", "1", "yes", "mock")
+MOCK_PARSER = os.environ.get("MOCK_PARSER", "True").lower() in ("true", "1", "yes", "mock")
+MOCK_AUDIT = os.environ.get("MOCK_AUDIT", "True").lower() in ("true", "1", "yes", "mock")
 
 SECRET_KEY = os.environ.get("SECRET_KEY")
