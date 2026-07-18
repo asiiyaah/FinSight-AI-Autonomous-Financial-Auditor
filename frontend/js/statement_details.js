@@ -429,3 +429,118 @@ runAuditBtn.addEventListener("click", async () => {
 
 // Initialization
 fetchStatementDetails();
+
+/* ===== CHAT WIDGET LOGIC ===== */
+const chatToggleBtn = document.getElementById("chat-toggle-btn");
+const chatWindow = document.getElementById("chat-window");
+const chatCloseBtn = document.getElementById("chat-close-btn");
+const chatMessages = document.getElementById("chat-messages");
+const chatInput = document.getElementById("chat-input");
+const chatSendBtn = document.getElementById("chat-send-btn");
+
+// Toggle chat window visibility
+chatToggleBtn.addEventListener("click", () => {
+    chatWindow.classList.toggle("d-none");
+    if (!chatWindow.classList.contains("d-none")) {
+        chatInput.focus();
+    }
+});
+
+chatCloseBtn.addEventListener("click", () => {
+    chatWindow.classList.add("d-none");
+});
+
+// Format basic markdown (line breaks, bold)
+function formatChatText(text) {
+    if (!text) return "";
+    return text
+        .replace(/\n/g, "<br>")
+        .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+        .replace(/\*(.*?)\*/g, "<em>$1</em>");
+}
+
+function appendMessage(role, text) {
+    const bubble = document.createElement("div");
+    bubble.className = `chat-bubble ${role}-bubble`;
+    bubble.innerHTML = role === 'ai' ? formatChatText(text) : text;
+    chatMessages.appendChild(bubble);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function showTypingIndicator() {
+    const indicator = document.createElement("div");
+    indicator.className = "typing-indicator";
+    indicator.id = "typing-indicator";
+    indicator.innerHTML = `
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+    `;
+    chatMessages.appendChild(indicator);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function removeTypingIndicator() {
+    const indicator = document.getElementById("typing-indicator");
+    if (indicator) {
+        indicator.remove();
+    }
+}
+
+async function sendMessage() {
+    const message = chatInput.value.trim();
+    if (!message) return;
+
+    // Display user message
+    appendMessage("user", message);
+    chatInput.value = "";
+    
+    // Disable input while waiting
+    chatInput.disabled = true;
+    chatSendBtn.disabled = true;
+    
+    showTypingIndicator();
+
+    try {
+        const response = await fetch(`${BASE_URL}/statements/${statementId}/chat/`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${accessToken}`
+            },
+            body: JSON.stringify({ message: message })
+        });
+
+        removeTypingIndicator();
+
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.answer) {
+                appendMessage("ai", data.answer);
+            } else {
+                appendMessage("ai", "Sorry, I couldn't generate a response. Please try again.");
+            }
+        } else {
+            if (response.status === 401) {
+                appendMessage("ai", "Your session has expired. Please refresh or log in again.");
+            } else {
+                appendMessage("ai", "An error occurred while connecting to the server.");
+            }
+        }
+    } catch (error) {
+        console.error("Chat Error:", error);
+        removeTypingIndicator();
+        appendMessage("ai", "A network error occurred. Please try again later.");
+    } finally {
+        chatInput.disabled = false;
+        chatSendBtn.disabled = false;
+        chatInput.focus();
+    }
+}
+
+chatSendBtn.addEventListener("click", sendMessage);
+chatInput.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") {
+        sendMessage();
+    }
+});
