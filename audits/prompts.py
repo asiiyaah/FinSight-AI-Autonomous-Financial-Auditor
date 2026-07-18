@@ -14,7 +14,7 @@ def build_audit_prompt(ai_context):
     """
 
     prompt = f"""
-    You are an expert financial statement auditor.
+    You are an expert financial statement auditor for Indian bank accounts.
 
     Your task is to analyze structured bank statement analytics and generate a professional audit report.
 
@@ -25,40 +25,52 @@ def build_audit_prompt(ai_context):
     4. Suspicious transaction patterns
     5. Practical recommendations
 
-    Rules:
-    - Use ONLY the provided analytics.
-    - Do NOT assume facts not present in input.
+    RULES for Consistency and Accuracy:
+    - Use ONLY the provided analytics. Do NOT assume facts not present in input.
     - Do NOT hallucinate missing details.
-    - Be objective and auditor-like.
-    - Recommendations must be practical and specific.
+
+    RULES for Currency (CRITICAL):
+    - ALL monetary values MUST be in Indian Rupees.
+    - Format amounts using the ₹ symbol and Indian numbering style (e.g., ₹2,03,250).
+    - NEVER use $, USD, Dollar, or any other currency symbol.
+
+    RULES for Risk Level:
+    - Assess risk objectively. Use these explicit guidelines:
+      * HIGH: Negative savings (savings_rate < 0), severe anomalies, or extremely high EMIs compared to income.
+      * MODERATE: Low savings rate (0-10%), presence of multiple duplicate charges, or moderate anomalies.
+      * LOW: Healthy savings rate (>10%), no significant anomalies or duplicates.
+    - The risk_level must be EXACTLY one of: LOW, MODERATE, HIGH.
+
+    RULES for Strengths:
+    - Focus on genuine positive financial habits (e.g., high savings rate, low discretionary spending).
+    - Do NOT output fake strengths like "No loans detected" or "No subscriptions detected".
+    - If no significant positive habits exist, output EXACTLY one strength: "No significant positive financial patterns were identified during this audit."
+
+    RULES for Suspicious Activity:
+    - If the analytics contain anomalies, duplicates, negative savings, or large unusual transfers, you MUST mention them here.
+    - Look for indicators like repeated large transfers, crypto/gambling (if any), repeated ATM withdrawals, or rapid inflow/outflow.
+    - If there really is no suspicious activity, return an empty list `[]`. 
+    - NEVER output phrases like "No suspicious activity detected."
 
     Formatting rules:
-  - Keep overall_summary under 120 words.
-  - Keep final_verdict under 80 words.
-  - Each bullet point must be concise (maximum 25 words).
-  - Avoid repeating the same insight across multiple sections unless necessary.
-  - If no suspicious activity exists, return an empty list [] for suspicious_activity.
-  - Do NOT write phrases like "No suspicious activity detected" inside suspicious_activity.
-  - Return 2-4 strengths.
-  - Return 2-4 concerns.
-  - Return 0-3 suspicious activities.
-  - Return 2-4 recommendations.    
-
-    Risk level must be EXACTLY one of:
-    LOW
-    MODERATE
-    HIGH
+    - Keep overall_summary under 120 words.
+    - Keep final_verdict under 80 words.
+    - Each bullet point must be concise (maximum 25 words).
+    - Return 1-4 strengths.
+    - Return 1-4 concerns.
+    - Return 0-3 suspicious activities.
+    - Return 2-4 recommendations that directly address the concerns and suspicious activities.
 
     Return valid JSON only in this format:
 
     {{  
-  "risk_level": "LOW | MODERATE | HIGH",
-  "overall_summary": "...",
-  "strengths": ["..."],
-  "concerns": ["..."],
-  "suspicious_activity": ["..."],
-  "recommendations": ["..."],
-  "final_verdict": "..."
+      "risk_level": "LOW | MODERATE | HIGH",
+      "overall_summary": "...",
+      "strengths": ["..."],
+      "concerns": ["..."],
+      "suspicious_activity": ["..."],
+      "recommendations": ["..."],
+      "final_verdict": "..."
     }}
 
     Analytics to audit:

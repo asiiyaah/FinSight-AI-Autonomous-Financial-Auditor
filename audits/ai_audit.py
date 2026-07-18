@@ -127,7 +127,7 @@ def generate_ai_audit(analytics):
     """
 
     import os
-    mock_audit = os.getenv("MOCK_AUDIT", "True").lower() == "true" or not getattr(settings, "GEMINI_API_KEY", None)
+    mock_audit = getattr(settings, "MOCK_AUDIT", True) or not getattr(settings, "GEMINI_API_KEY", None)
 
     if mock_audit:
         import time
@@ -172,6 +172,7 @@ def generate_ai_audit(analytics):
                 config=dict(
                     response_mime_type="application/json",
                     response_schema=AIAuditSchema,
+                    temperature=0.0,
                 ),
             )
 

@@ -74,14 +74,12 @@ def parse_statement(statement):
         raise ValueError("Only PDF files supported")
 
     import os
-    mock_parser = os.getenv("MOCK_PARSER", "True").lower() == "true" or not getattr(settings, "GEMINI_API_KEY", None)
+    mock_parser = getattr(settings, "MOCK_PARSER", True) or not getattr(settings, "GEMINI_API_KEY", None)
 
     if mock_parser:
-        import time
         time.sleep(1.5)
         
         from .generate_data import generate_transactions
-        import pandas as pd
         
         mock_txs = generate_transactions()
         parsed_count = 0
@@ -167,7 +165,7 @@ def parse_statement(statement):
     for attempt in range(max_retries):
         try:
             response = client.models.generate_content(
-                model="gemini-3.5-flash",
+                model="gemini-2.5-flash",
                 contents=prompt,
                 config=dict(
                     response_mime_type="application/json",
