@@ -1,10 +1,10 @@
 import pandas as pd
 import pdfplumber as pl
 from .models import Transaction
-from google import genai
 from django.conf import settings
 import time
 import re
+from services.llm import get_llm_provider
 
 from pydantic import BaseModel,Field
 from financial_engine.pii_redactor import redact_sensitive_info
@@ -89,7 +89,11 @@ def parse_statement(statement):
     redacted_text = redact_sensitive_info(raw_text)
 
     # SEND TO GEMINI & SAVE TO DATABASE
-    client = genai.Client(api_key=settings.GEMINI_API_KEY)
+    provider = get_llm_provider(
+        operation="parse_statement",
+        statement_id=statement.id,
+        user_id=statement.user.id
+    )
 
     prompt = f"""
             You are a financial statement parser.
@@ -118,43 +122,16 @@ def parse_statement(statement):
         {redacted_text}
         """
 
-    max_retries = 5
-    retry_delay = 8
-    response = None
-
-    for attempt in range(max_retries):
-        try:
-            response = client.models.generate_content(
-                model="gemini-2.5-flash",
-                contents=prompt,
-                config=dict(
-                    response_mime_type="application/json",
-                    response_schema=StatementData,
-                ),
-            )
-            # If successful, break out of the retry loop completely!
-            break
-        except Exception as e:
-            # Catch temporary high-demand or rate limits
-            if ("503" in str(e) or "429" in str(e)) and attempt < max_retries - 1:
-                print(f"Gemini busy ({e}). Retrying in {retry_delay}s... (Attempt {attempt + 1}/{max_retries})")
-                time.sleep(retry_delay)
-                retry_delay *= 2  # Exponential backoff
-            else:
-                print(f"Gemini processing failed! :{e}")
-                return 0
-
-    if not response:
-        return 0
-
+    result = provider.generate_content(prompt=prompt, schema=StatementData)
+    
     try:
-        result_data = response.parsed
-        if not result_data or not result_data.transactions:
+        transactions = result.get("transactions", [])
+        if not transactions:
             print("No transactions extracted from Gemini.")
             return 0
         parsed_count = 0
 
-        for tx in result_data.transactions:
+        for tx in transactions:
             extracted_date = pd.to_datetime(tx.date).date()
             extracted_vendor = tx.vendor.strip() if tx.vendor else "Unknown"
             extracted_amount = tx.amount

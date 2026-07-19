@@ -1,6 +1,6 @@
 import time
-from typing import List, Dict
-from google import genai
+from typing import List, Dict, Set
+from services.llm import get_llm_provider
 from django.conf import settings
 from pydantic import BaseModel
 from statements.models import MerchantCategory
@@ -125,7 +125,7 @@ def _ai_categorize_vendors(vendors: List[str]) -> Dict[str, str]:
     if mock_parser:
         return {vendor: "Other" for vendor in vendors}
         
-    client = genai.Client(api_key=settings.GEMINI_API_KEY)
+    provider = get_llm_provider(operation="ai_categorization")
     
     prompt = f"""
     Categorize the following list of Indian merchant/vendor names into one of these categories:
@@ -136,18 +136,14 @@ def _ai_categorize_vendors(vendors: List[str]) -> Dict[str, str]:
     """
     
     try:
-        response = client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=prompt,
-            config=dict(
-                response_mime_type="application/json",
-                response_schema=BatchCategorizationResponse,
-            ),
+        result = provider.generate_content(
+            prompt=prompt,
+            schema=BatchCategorizationResponse
         )
         
-        if response and response.parsed:
-            return {item.vendor: item.category for item in response.parsed.categorizations}
+        if result and "categorizations" in result:
+            return {item["vendor"]: item["category"] for item in result["categorizations"]}
     except Exception as e:
-        print(f"AI categorization failed: {e}")
+        print(f"Failed AI categorization: {e}")
         
-    return {}
+    return {vendor: "Other" for vendor in vendors}

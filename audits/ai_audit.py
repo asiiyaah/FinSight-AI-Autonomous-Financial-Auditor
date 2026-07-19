@@ -1,6 +1,6 @@
-from typing import Dict, Any
+from typing import Dict, Any, List
 import time
-from google import genai
+from services.llm import get_llm_provider
 from audits.schemas import AIAuditSchema
 from audits.prompts import build_audit_prompt
 from django.conf import settings
@@ -121,39 +121,14 @@ def generate_ai_audit(analytics):
     ai_context = build_ai_context(analytics)
     prompt = build_audit_prompt(ai_context)
 
-    client = genai.Client(api_key=settings.GEMINI_API_KEY)
-
-    max_retries = 5
-    retry_delay = 8
-    response = None
-
-    for attempt in range(max_retries):
-        try:
-            response = client.models.generate_content(
-                model="gemini-2.5-flash",
-                contents=prompt,
-                config=dict(
-                    response_mime_type="application/json",
-                    response_schema=AIAuditSchema,
-                    temperature=0.0,
-                ),
-            )
-            break
-        except Exception as e:
-            if ("503" in str(e) or "429" in str(e)) and attempt < max_retries - 1:
-                print(f"Gemini busy ({e}). Retrying in {retry_delay}s... (Attempt {attempt + 1}/{max_retries})")
-                time.sleep(retry_delay)
-                retry_delay *= 2
-            else:
-                raise Exception(f"AI audit failed: {e}")
-
-    if not response:
-        raise Exception("AI audit failed: No response from Gemini")
+    provider = get_llm_provider(operation="ai_audit", statement_id=statement_id)
 
     try:
-        result = response.parsed
-        if not result:
-            raise Exception("Empty Gemini response")
-        return result.model_dump()
+        result = provider.generate_content(
+            prompt=prompt,
+            schema=AIAuditSchema,
+            temperature=0.0
+        )
+        return result
     except Exception as e:
-        raise Exception(f"Failed to parse AI audit response: {e}")
+        raise Exception(f"Failed to complete AI audit: {e}")

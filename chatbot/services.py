@@ -9,6 +9,7 @@ from chatbot.intent import detect_intent
 from chatbot.retrieval import build_context
 from chatbot.prompt_builder import build_prompt
 from chatbot.ai import generate_response
+from services.llm.exceptions import LLMError
 
 logger = logging.getLogger(__name__)
 
@@ -84,11 +85,20 @@ def chat_with_statement(statement_id: int, message: str, user=None) -> Dict[str,
             "intent": intent.value if hasattr(intent, "value") else intent
         }
 
+    except LLMError as e:
+        logger.warning("LLM Error in chatbot: %s", str(e))
+        return {
+            "success": False,
+            "status_code": 502,
+            "error_code": type(e).__name__,
+            "message": str(e)
+        }
     except Exception as e:
         # Catch exceptions, log them safely, never expose stack traces to user
         logger.exception("Unexpected error in chatbot pipeline for statement %s", statement_id)
         return {
             "success": False,
             "status_code": 500,
+            "error_code": "INTERNAL_ERROR",
             "message": "An unexpected error occurred while processing your request. Please try again later."
         }

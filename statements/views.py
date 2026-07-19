@@ -7,6 +7,7 @@ from .parser import parse_statement
 from audits.audit_engine import run_full_audit
 from .serializers import StatementListSerializer
 from rest_framework.pagination import PageNumberPagination
+from services.llm.exceptions import LLMError
 
 
 # Create your views here.
@@ -109,7 +110,22 @@ class StatementUploadView(APIView):
             file=file,
             file_name=file_name,
         )
-        count=parse_statement(statement)
+        
+        try:
+            count=parse_statement(statement)
+        except LLMError as e:
+            statement.audit_status = "failed"
+            statement.save()
+            # Delete partial transactions just in case
+            statement.transactions.all().delete()
+            return Response(
+                {
+                    "success": False,
+                    "error_code": type(e).__name__,
+                    "error": str(e)
+                },
+                status=status.HTTP_502_BAD_GATEWAY
+            )
 
 #DESTRUCTION OF UNPARSED DOCUMENTS
         # =========================================================
@@ -168,9 +184,20 @@ class StatementAuditView(APIView):
                 },
                 status=status.HTTP_200_OK
             )
+        except LLMError as e:
+            return Response(
+                {
+                    "success": False,
+                    "error_code": type(e).__name__,
+                    "error": str(e)
+                },
+                status=status.HTTP_502_BAD_GATEWAY
+            )
         except Exception as e:
             return Response(
                 {
+                    "success": False,
+                    "error_code": "INTERNAL_ERROR",
                     "error": "Failed to complete audit",
                     "details": str(e)
                 },

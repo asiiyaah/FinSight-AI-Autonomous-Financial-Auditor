@@ -29,35 +29,24 @@ def _generate_gemini_response(prompt: str) -> str:
     """
     Sends the fully constructed prompt to the Gemini API and returns the raw text.
     """
-    # Import inside the function so it's only loaded when needed
-    try:
-        import google.generativeai as genai
-    except ImportError:
-        logger.error("google-generativeai package is not installed.")
-        return "I'm unable to generate a response right now. Please try again in a moment."
+    from services.llm import get_llm_provider
+    from services.llm.exceptions import LLMError
     
-    # Retrieve key from Django settings or environment
-    api_key = getattr(settings, 'GEMINI_API_KEY', None) or os.environ.get("GEMINI_API_KEY")
+    provider = get_llm_provider(operation="chatbot")
     
-    if not api_key:
-        logger.error("GEMINI_API_KEY is missing. Cannot call Gemini API.")
-        return "I'm unable to generate a response right now due to a configuration error. Please try again later."
-        
     try:
-        genai.configure(api_key=api_key)
-        # Using gemini-2.5-flash as per the roadmap Phase 2
-        model = genai.GenerativeModel('gemini-2.5-flash')
-        
-        response = model.generate_content(prompt)
-        
-        if response and hasattr(response, 'text') and response.text:
-            return response.text
+        response_text = provider.generate_content(prompt=prompt)
+        if response_text:
+            return response_text
         else:
-            logger.warning("Gemini API returned an empty or invalid response.")
+            logger.warning("LLM Provider returned an empty or invalid response.")
             return "I'm sorry, I couldn't generate a meaningful response based on that data."
             
+    except LLMError as e:
+        # Let the view handle the specific LLMError for consistent JSON responses
+        raise e
     except Exception as e:
-        logger.error(f"Gemini API Exception: {str(e)}")
+        logger.error(f"Unexpected Chatbot AI Exception: {str(e)}")
         return "I'm unable to generate a response right now. Please try again in a moment."
 
 
