@@ -1,5 +1,25 @@
 console.log("statement_details.js loaded");
 
+// Simple Toast Notification System
+function showToast(message) {
+    const toast = document.createElement("div");
+    toast.textContent = message;
+    toast.style.position = "fixed";
+    toast.style.bottom = "20px";
+    toast.style.left = "50%";
+    toast.style.transform = "translateX(-50%)";
+    toast.style.backgroundColor = "#333";
+    toast.style.color = "#fff";
+    toast.style.padding = "10px 20px";
+    toast.style.borderRadius = "5px";
+    toast.style.zIndex = "9999";
+    toast.style.boxShadow = "0 2px 10px rgba(0,0,0,0.2)";
+    document.body.appendChild(toast);
+    setTimeout(() => {
+        toast.remove();
+    }, 3000);
+}
+
 // Token Check
 const accessToken = localStorage.getItem("access_token");
 if (!accessToken) {
@@ -13,8 +33,8 @@ const urlParams = new URLSearchParams(window.location.search);
 const statementId = urlParams.get("id");
 
 if (!statementId) {
-    alert("No statement ID provided.");
-    window.location.href = "dashboard.html";
+    showToast("No statement ID provided.");
+    setTimeout(() => { window.location.href = "dashboard.html"; }, 1500);
 }
 
 // Elements
@@ -54,8 +74,12 @@ async function fetchStatementDetails() {
                 window.location.href = "index.html";
                 return;
             }
-            alert("Error loading statement details.");
-            window.location.href = "dashboard.html";
+            if (response.status === 404) {
+                showToast("Statement could not be found.");
+            } else {
+                showToast("Error loading statement details.");
+            }
+            setTimeout(() => { window.location.href = "dashboard.html"; }, 1500);
             return;
         }
 
@@ -64,8 +88,8 @@ async function fetchStatementDetails() {
 
     } catch (error) {
         console.error(error);
-        alert("Failed to connect to the server.");
-        window.location.href = "dashboard.html";
+        showToast("Failed to connect to the server.");
+        setTimeout(() => { window.location.href = "dashboard.html"; }, 1500);
     }
 }
 
@@ -399,8 +423,13 @@ runAuditBtn.addEventListener("click", async () => {
         });
 
         if (!response.ok) {
+            if (response.status === 404) {
+                showToast("Statement could not be found.");
+                setTimeout(() => { window.location.href = "dashboard.html"; }, 1500);
+                return;
+            }
             const errData = await response.json();
-            alert(`AI Audit run failed: ${errData.error || response.statusText}`);
+            showToast(`AI Audit run failed: ${errData.error || response.statusText}`);
             runAuditBtn.disabled = false;
             runAuditBtn.classList.remove("d-none");
             auditProgress.classList.add("d-none");
@@ -420,7 +449,7 @@ runAuditBtn.addEventListener("click", async () => {
 
     } catch (error) {
         console.error(error);
-        alert("Server error occurred while executing AI Audit.");
+        showToast("Server error occurred while executing AI Audit.");
         runAuditBtn.disabled = false;
         runAuditBtn.classList.remove("d-none");
         auditProgress.classList.add("d-none");

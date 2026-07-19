@@ -8,6 +8,26 @@ if (!accessToken) {
     window.location.href = "index.html";
 }
 
+// Simple Toast Notification System
+function showToast(message) {
+    const toast = document.createElement("div");
+    toast.textContent = message;
+    toast.style.position = "fixed";
+    toast.style.bottom = "20px";
+    toast.style.left = "50%";
+    toast.style.transform = "translateX(-50%)";
+    toast.style.backgroundColor = "#333";
+    toast.style.color = "#fff";
+    toast.style.padding = "10px 20px";
+    toast.style.borderRadius = "5px";
+    toast.style.zIndex = "9999";
+    toast.style.boxShadow = "0 2px 10px rgba(0,0,0,0.2)";
+    document.body.appendChild(toast);
+    setTimeout(() => {
+        toast.remove();
+    }, 3000);
+}
+
 // Elements
 const loadingState = document.getElementById("loading-state");
 const emptyState = document.getElementById("empty-state");
@@ -205,17 +225,20 @@ confirmDeleteBtn.addEventListener("click", async () => {
             headers: { Authorization: `Bearer ${accessToken}` }
         });
 
-        if (response.ok || response.status === 204) {
+        if (response.ok || response.status === 204 || response.status === 404) {
             deleteModal.hide();
             // Reload current page (or go back if this was last item on page)
             fetchStatements(currentPage);
+            if (response.status === 404) {
+                showToast("Statement no longer exists. Cleaned up.");
+            }
         } else {
             const errData = await response.json().catch(() => ({}));
-            alert(errData.error || "Delete failed. Please try again.");
+            showToast(errData.error || "Delete failed. Please try again.");
         }
     } catch (error) {
         console.error(error);
-        alert("Network error. Could not delete statement.");
+        showToast("Network error. Could not delete statement.");
     } finally {
         confirmDeleteBtn.disabled = false;
         confirmDeleteBtn.innerHTML = `<i class="bi bi-trash3 me-1"></i>Delete`;

@@ -7,7 +7,7 @@ import time
 import re
 
 from pydantic import BaseModel,Field
-
+from financial_engine.pii_redactor import redact_sensitive_info
 
 #schema for gemini using pydantic
 class ExtractedTransaction(BaseModel):
@@ -15,7 +15,6 @@ class ExtractedTransaction(BaseModel):
     date: str = Field(description="The date of the transaction in YYYY-MM-DD format.")
     vendor: str = Field(description="The vendor, merchant, or description of who was paid.")
     amount: float = Field(description="The transaction amount as a numeric float value.")
-    category: str = Field(description="A clean category name like Food, Utilities, or Entertainment.")
     transaction_type: str = Field(description="Either credit or debit.")
     raw_description: str = Field(description="Original transaction description exactly as seen in statement.")
 
@@ -25,45 +24,7 @@ class StatementData(BaseModel):
     transactions: list[ExtractedTransaction]
 
 
-def redact_sensitive_info(text: str) -> str:
-    """
-    Sanitize raw statement text to remove sensitive PII (emails, names, phone numbers,
-    PAN, Aadhaar, account numbers) before transmission to external APIs.
-    """
-    # 1. Redact Customer Names / Account Names in headers (using non-newline whitespace [ \t])
-    text = re.sub(
-        r'(?i)(customer name|a/c holder|account name|holder|name)\s*:\s*([a-zA-Z \t]+)',
-        lambda m: f"{m.group(1)}: [NAME_REDACTED]",
-        text
-    )
-    
-    # 2. Redact Addresses in headers
-    text = re.sub(
-        r'(?i)(address|residence|location)\s*:\s*([a-zA-Z0-9, \t\.\-\#\/]+)',
-        lambda m: f"{m.group(1)}: [ADDRESS_REDACTED]",
-        text
-    )
-    
-    # 3. Redact Email Addresses
-    text = re.sub(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b', '[EMAIL_REDACTED]', text)
-    
-    # 4. Redact Phone / Mobile Numbers (matching optional leading + and country code prefixes)
-    text = re.sub(r'\+?\b(?:\+?91|0)?[6-9]\d{9}\b', '[PHONE_REDACTED]', text)
-    
-    # 5. Redact Indian IFSC Codes
-    text = re.sub(r'\b[A-Z]{4}0[A-Z0-9]{6}\b', '[IFSC_REDACTED]', text)
-    
-    # 6. Redact PAN Card Numbers
-    text = re.sub(r'\b[A-Z]{5}[0-9]{4}[A-Z]\b', '[PAN_REDACTED]', text)
-    
-    # 7. Redact Aadhaar Numbers
-    text = re.sub(r'\b\d{4}\s\d{4}\s\d{4}\b', '[AADHAAR_REDACTED]', text)
-    text = re.sub(r'\b\d{12}\b', '[AADHAAR_REDACTED]', text)
-    
-    # 8. Redact Potential Account Numbers / Credit Card Numbers (9 to 18 digits)
-    text = re.sub(r'\b\d{9,18}\b', '[ACCOUNT_REDACTED]', text)
-    
-    return text
+
 
 
 # =========================================================
@@ -141,7 +102,6 @@ def parse_statement(statement):
             - date (YYYY-MM-DD)
             - vendor (clean short merchant name)
             - amount (numeric only)
-            - category (Food, Bills, Shopping, Subscription, Transport, Income, Other)
             - transaction_type (ONLY 'credit' or 'debit')
             - raw_description (original text from statement row)
 
@@ -198,7 +158,7 @@ def parse_statement(statement):
             extracted_date = pd.to_datetime(tx.date).date()
             extracted_vendor = tx.vendor.strip() if tx.vendor else "Unknown"
             extracted_amount = tx.amount
-            extracted_category = tx.category.strip() if tx.category else "Uncategorized"
+            extracted_category = "Uncategorized" # Categories will be handled by the Financial Intelligence Engine
             extracted_type = (
                 tx.transaction_type.lower().strip()
                 if tx.transaction_type else "debit"
