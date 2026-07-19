@@ -1,75 +1,104 @@
-# FinSight - AI-Powered Financial Statement Auditing Platform
+# FinSight: Autonomous Financial Auditor 🚀
 
-FinSight is a secure, AI-powered financial statement analysis and auditing platform. It leverages **Django REST Framework** (backend), **Vanilla HTML/CSS/JS** (frontend), and **Google Gemini AI** to extract transactions, perform deterministic audit checks, and generate professional, structured financial audit reports.
+FinSight is a sophisticated, AI-assisted financial auditing application that allows users to upload PDF bank statements and receive deep, actionable insights into their spending habits, recurring obligations, and financial risks. 
 
----
-
-## 🌟 Key Features (Implemented)
-
-### 1. Secure Authentication & Onboarding
-- **JWT Token Authentication:** Secure register, login, and token-refresh cycle (Access & Refresh tokens) using `Django REST Framework SimpleJWT`.
-- **Dynamic Onboarding:** Smart frontend dashboard detects whether the signed-in user is new or returning. New users see a visual onboarding prompt to upload their first statement, while returning users see their analysis statistics.
-
-### 2. Secure Bank Statement Upload
-- **Premium Drag & Drop Zone:** Interactive upload container with smooth transitions and glow outlines when dragging a PDF.
-- **Visual Upload Feedback:** Progress loaders disable upload buttons and display spinners during file parsing to block double submissions.
-
-### 3. PII Sensitive Data Redaction (Privacy First)
-- **Local Sanitizer:** Extracted raw PDF text is sanitized **locally** on the server before transmitting it to external APIs.
-- **PII Filters:** Uses regex logic to redact:
-  - Account/Card Numbers (9-18 digits) ➔ `[ACCOUNT_REDACTED]`
-  - Indian Aadhaar & PAN Cards ➔ `[AADHAAR_REDACTED]`, `[PAN_REDACTED]`
-  - Customer/Holder Names in document headers ➔ `[NAME_REDACTED]`
-  - Email addresses & Phone numbers ➔ `[EMAIL_REDACTED]`, `[PHONE_REDACTED]`
-  - Bank branch codes (IFSC) ➔ `[IFSC_REDACTED]`
-
-### 4. Interactive Statement Details Dashboard
-- **Layer A: Deterministic Financial Analytics (Local & Free):**
-  - **Cashflow Summaries:** Automatically aggregates total credit (income), total debit (spending), net savings, and savings rates formatted in Indian Rupees (`₹`).
-  - **Category Breakdown:** Groups spending by category and paints dynamic percentage progress bars.
-  - **Heuristic Risk Detectors:** Automatically flags statistical spending anomalies (threshold-based), duplicate charges, monthly subscription bills, and recurring loan EMIs.
-- **Layer B: AI Audit Analysis (Gemini API):**
-  - Structured audit summaries generated on-demand by **Gemini** (using `gemini-2.5-flash` with a strict JSON Pydantic schema).
-  - Categorizes insights into risk levels (**LOW**, **MODERATE**, or **HIGH**) with matching glow badges, strengths, critical concerns, suspicious transactions, and actionable financial advice.
-
-### 5. Local Developer Mock Bypasses
-- Integrates `MOCK_PARSER` and `MOCK_AUDIT` environment options. If enabled (or if no API key is set), the backend generates rich synthetic transaction sets and structured audits instantly. This saves Gemini API token usage during local frontend/layout testing.
+The system employs a strict two-layer architecture, separating deterministic financial logic from generative AI analysis to ensure absolute accuracy and prevent hallucinations.
 
 ---
 
-## 🛠️ Technology Stack
-- **Backend:** Django, Django REST Framework, SimpleJWT, PDFPlumber, Pandas, Google GenAI SDK.
-- **Frontend:** Vanilla HTML5, Vanilla CSS3 (custom variables, glassmorphism dark-theme), JavaScript ES6 (Fetch API), Bootstrap 5.
-- **Database:** SQLite (Development).
+## 🌟 Detailed Features
+
+### 1. Financial Intelligence Engine (Deterministic Layer)
+The core of FinSight is a highly modular, deterministic analytics engine. It acts as the single source of truth for all objective financial facts.
+- **Strict PII Redaction**: Strips all Personal Identifiable Information (PII) before any data ever reaches the AI layer.
+- **Intelligent Parsing**: Extracts raw transactional data directly from PDF bank statements.
+- **Vendor Normalization & Categorization**: Cleans messy vendor strings and maps them to categories (*Groceries, Utilities, Entertainment*). Unknown vendors are automatically categorized using AI and cached in the database to optimize future audits.
+- **Subscriptions vs. Recurring Bills**: Dynamically detects and isolates entertainment subscriptions (Netflix, Prime) from recurring utility bills (Electricity, Broadband) using intelligent confidence scoring (Category + Keywords + Recurrence Enrichment).
+- **Loan & EMI Detection**: Explicitly identifies active monthly loan obligations and EMIs with strict gatekeeping (using exact keywords like *ECS, Installment*) to prevent false positives.
+- **Duplicate Detection**: Flags identical charges happening on the same day.
+- **Anomaly Detection**: Combines statistical IQR boundary analysis with hardcoded financial rules to flag unusual spending, large ATM withdrawals, and bank penalties.
+- **Income & Cashflow Analysis**: Tracks primary salary sources, total inflows, outflows, and calculates overall cashflow health.
+
+### 2. AI Audit Engine (Generative Layer)
+Powered by Google Gemini, the AI Audit layer takes the structured *Financial Intelligence Object* produced by the deterministic engine and generates a comprehensive risk assessment.
+- **Contextual Reasoning**: Generates a Final Verdict, Suspicious Activity list, and Actionable Recommendations.
+- **Strict Guardrails**: The AI is strictly prohibited from doing math, recalculating anomalies, or identifying subscriptions. It acts purely as a financial advisor interpreting the facts.
+
+### 3. Conversational AI Chatbot
+- An integrated chat interface allows users to ask open-ended questions about their uploaded statement (e.g., *"How much did I spend on food this month?"* or *"Can I afford a new car?"*).
+- The bot leverages contextual retrieval, seamlessly injecting the deterministic findings into the prompt to provide accurate, personalized advice.
+
+### 4. Interactive Dashboard
+- **Modern UI**: Built with HTML, Vanilla JavaScript, and Bootstrap.
+- **Statement Lifecycle Management**: Upload, view, audit, and cleanly delete statements.
+- **Visual Analytics**: Interactive tabs displaying Cashflow, Anomalies, Duplicates, Subscriptions, and EMIs.
+- **Robust Error Handling**: Graceful frontend degradation, dynamic UI updates, and intelligent cleanup when background processing fails or statements go missing.
 
 ---
 
-## 🚀 Running Locally
+## 🛠 Tech Stack
 
-### 1. Run the Backend API
-Navigate to the root directory, activate your virtual environment, and run the Django dev server:
-```bash
-cd FinSight
-source venv/bin/activate
-python manage.py runserver
-```
-*(Runs on **http://127.0.0.1:8000**)*
+**Backend**
+- **Framework**: Django & Django REST Framework (DRF)
+- **Database**: SQLite (Development) / PostgreSQL (Ready)
+- **AI Integration**: Google Gemini API (`google-generativeai`)
+- **Authentication**: JWT / Token-based authentication (Simple JWT)
 
-### 2. Run the Static Frontend
-In a second terminal window, navigate to the folder, activate your environment, and serve the frontend:
-```bash
-cd FinSight
-source venv/bin/activate
-python3 -m http.server 8080 --directory frontend
-```
-*(Runs on **http://localhost:8080**)*
-
-Open **[http://localhost:8080/index.html](http://localhost:8080/index.html)** in your browser to log in and upload a PDF!
+**Frontend**
+- **Core**: HTML5, Vanilla JavaScript, CSS3
+- **Styling framework**: Bootstrap 5
+- **Icons**: Bootstrap Icons
 
 ---
 
-## 📅 Roadmap (Upcoming Features)
+## ⚙️ How to Run Locally
 
-- **💬 Conversational RAG Chatbot:** Ask questions directly to your bank statement (e.g., *"How much did I spend on Swiggy in March?"*, *"Why was my risk rating Moderate?"*) using vector search databases and RAG (Retrieval-Augmented Generation) templates.
-- **📊 Comparative Analysis:** Upload multiple months of statements and view comparative trend graphs of cashflow histories over quarters.
-- **📄 Exportable PDF Compliance Reports:** Download signed financial audit reports for tax validation and personal accounting.
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/your-username/FinSight.git
+   cd FinSight
+   ```
+
+2. **Set up the Virtual Environment:**
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate  # On Windows use: venv\Scripts\activate
+   ```
+
+3. **Install Dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. **Environment Variables:**
+   Create a `.env` file in the root directory and add your API keys:
+   ```env
+   GEMINI_API_KEY=your_gemini_api_key_here
+   ```
+
+5. **Run Migrations:**
+   ```bash
+   python manage.py migrate
+   ```
+
+6. **Start the Django Backend:**
+   ```bash
+   python manage.py runserver
+   ```
+
+7. **Access the Application:**
+   Open your browser and navigate to the frontend folder or host it locally (e.g., via VS Code Live Server). By default, the frontend interacts with `http://127.0.0.1:8000/api/v1/`.
+
+---
+
+## 🚀 What's Coming (Roadmap)
+
+- [ ] **Multi-Month Trend Analysis**: Compare spending habits across multiple months and quarters.
+- [ ] **Export to CSV/PDF**: Allow users to export the final AI audit and deterministic tables into beautiful PDF reports.
+- [ ] **Support for More Banks**: Expanding the parser to support native PDF formats for 15+ major global banks without relying on OCR.
+- [ ] **Custom Budgets**: Users can set budget limits on categories and the AI will track adherence.
+- [ ] **Dockerization**: Easy 1-click deployment using Docker and Docker Compose.
+
+---
+
+### ⭐ If you found this useful, please consider giving the repository a star!
