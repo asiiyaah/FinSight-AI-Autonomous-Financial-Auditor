@@ -73,9 +73,6 @@ class GeminiProvider(LLMProvider):
         )
 
     def generate_content(self, prompt: str, schema=None, temperature=None):
-        max_retries = 2
-        retry_delay = 5
-
         config = {}
         if schema:
             config["response_mime_type"] = "application/json"
@@ -83,32 +80,23 @@ class GeminiProvider(LLMProvider):
         if temperature is not None:
             config["temperature"] = temperature
 
-        for attempt in range(max_retries + 1):
-            try:
-                response = self.client.models.generate_content(
-                    model=self.model,
-                    contents=prompt,
-                    config=config
-                )
+        try:
+            response = self.client.models.generate_content(
+                model=self.model,
+                contents=prompt,
+                config=config
+            )
+            
+            if schema:
+                if not response.parsed:
+                    raise ValueError("Empty Gemini response or failed to parse schema")
+                return response.parsed.model_dump()
+            else:
+                return response.text
                 
-                if schema:
-                    if not response.parsed:
-                        raise ValueError("Empty Gemini response or failed to parse schema")
-                    return response.parsed.model_dump()
-                else:
-                    return response.text
-                    
-            except Exception as e:
-                # Log the raw exception on the server
-                self._log_error(e)
-                
-                try:
-                    self._classify_and_raise(e)
-                except LLMRateLimitError as rate_limit_e:
-                    if attempt < max_retries:
-                        logger.warning(f"Transient error with Gemini. Retrying in {retry_delay}s... (Attempt {attempt + 1}/{max_retries})")
-                        time.sleep(retry_delay)
-                        retry_delay *= 2
-                        continue
-                    else:
-                        raise rate_limit_e
+        except Exception as e:
+            # Log the raw exception on the server
+            self._log_error(e)
+            
+            # Immediately classify and raise instead of synchronous retrying
+            self._classify_and_raise(e)

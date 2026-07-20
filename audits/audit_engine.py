@@ -66,6 +66,7 @@ def run_audit(statement_id):
     categories_map = batch_categorize_vendors(normalized_vendors)
     
     tx_dicts = []
+    transactions_to_update = []
     for tx, norm_vendor in zip(txs, normalized_vendors):
         # Apply category and save to DB
         cat_info = categories_map.get(norm_vendor, {"category": "Uncategorized", "source": "deterministic", "confidence": 0.0})
@@ -73,7 +74,7 @@ def run_audit(statement_id):
         # Update category on transaction if it was uncategorized or different
         if tx.category != cat_info["category"]:
             tx.category = cat_info["category"]
-            tx.save(update_fields=["category"])
+            transactions_to_update.append(tx)
             
         tx_dicts.append({
             "id": tx.id,
@@ -85,6 +86,9 @@ def run_audit(statement_id):
             "transaction_type": tx.transaction_type,
             "raw_description": tx.raw_description,
         })
+        
+    if transactions_to_update:
+        Transaction.objects.bulk_update(transactions_to_update, ["category"])
         
     # 3. Detectors
     cashflow = calculate_cashflow(tx_dicts)
@@ -123,7 +127,7 @@ def run_full_audit(statement_id):
         statement.audit_status = "analytics_ready"
         statement.save()
         
-        ai_result = generate_ai_audit(analytics)
+        ai_result = generate_ai_audit(analytics, statement_id=statement_id)
         statement.ai_audit = ai_result
         statement.audit_status = "completed"
         statement.save()

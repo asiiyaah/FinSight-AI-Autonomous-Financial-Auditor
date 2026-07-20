@@ -43,7 +43,7 @@ def parse_statement(statement):
         from .generate_data import generate_transactions
         
         mock_txs = generate_transactions()
-        parsed_count = 0
+        transactions_to_create = []
         for tx in mock_txs:
             extracted_date = pd.to_datetime(tx["date"]).date()
             extracted_vendor = tx["vendor"].strip() if tx["vendor"] else "Unknown"
@@ -54,7 +54,7 @@ def parse_statement(statement):
             if extracted_category == "Income":
                 extracted_type = "credit"
             
-            Transaction.objects.create(
+            transactions_to_create.append(Transaction(
                 statement=statement,
                 date=extracted_date,
                 vendor=extracted_vendor,
@@ -62,14 +62,14 @@ def parse_statement(statement):
                 category=extracted_category,
                 transaction_type=extracted_type,
                 raw_description=f"MOCK: {extracted_vendor}"
-            )
-            parsed_count += 1
+            ))
             
-        if parsed_count > 0:
+        if transactions_to_create:
+            Transaction.objects.bulk_create(transactions_to_create)
             statement.is_parsed = True
             statement.save()
             
-        return parsed_count
+        return len(transactions_to_create)
 
     raw_text = ""
     try:
@@ -129,27 +129,32 @@ def parse_statement(statement):
         if not transactions:
             print("No transactions extracted from Gemini.")
             return 0
-        parsed_count = 0
+        
+        transactions_to_create = []
 
         for tx in transactions:
-            extracted_date = pd.to_datetime(tx.date).date()
-            extracted_vendor = tx.vendor.strip() if tx.vendor else "Unknown"
-            extracted_amount = tx.amount
+            extracted_date = pd.to_datetime(tx.get("date")).date()
+            vendor = tx.get("vendor", "")
+            extracted_vendor = vendor.strip() if vendor else "Unknown"
+            extracted_amount = tx.get("amount")
             extracted_category = "Uncategorized" # Categories will be handled by the Financial Intelligence Engine
+            
+            transaction_type = tx.get("transaction_type", "")
             extracted_type = (
-                tx.transaction_type.lower().strip()
-                if tx.transaction_type else "debit"
+                transaction_type.lower().strip()
+                if transaction_type else "debit"
             )
 
             if extracted_type not in ["credit", "debit"]:
                 extracted_type = "debit"
 
+            raw_description = tx.get("raw_description", "")
             extracted_raw = (
-                tx.raw_description.strip()
-                if tx.raw_description else extracted_vendor
+                raw_description.strip()
+                if raw_description else extracted_vendor
             )
 
-            Transaction.objects.create(
+            transactions_to_create.append(Transaction(
                 statement=statement,
                 date=extracted_date,
                 vendor=extracted_vendor,
@@ -157,14 +162,14 @@ def parse_statement(statement):
                 category=extracted_category,
                 transaction_type=extracted_type,
                 raw_description=extracted_raw,
-            )
-            parsed_count += 1
+            ))
 
-        if parsed_count > 0:
+        if transactions_to_create:
+            Transaction.objects.bulk_create(transactions_to_create)
             statement.is_parsed = True
             statement.save()
 
-        return parsed_count
+        return len(transactions_to_create)
 
     except Exception as e:
         print(f"Database insertion failed! :{e}")

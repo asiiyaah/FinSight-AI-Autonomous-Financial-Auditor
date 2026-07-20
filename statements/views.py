@@ -172,6 +172,17 @@ class StatementAuditView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
+        if statement.ai_audit:
+            return Response(
+                {
+                    "message": "Audit already completed",
+                    "statement_id": statement.id,
+                    "analytics": statement.analytics,
+                    "ai_audit": statement.ai_audit
+                },
+                status=status.HTTP_200_OK
+            )
+
         try:
             result = run_full_audit(statement.id)
 

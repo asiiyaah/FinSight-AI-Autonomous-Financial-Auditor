@@ -88,7 +88,7 @@ def build_ai_context(analytics: Dict[str, Any]):
     }
     return ai_context
 
-def generate_ai_audit(analytics):
+def generate_ai_audit(analytics, statement_id=None):
     import os
     mock_audit = getattr(settings, "MOCK_AUDIT", True) or not getattr(settings, "GEMINI_API_KEY", None)
 
