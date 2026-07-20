@@ -550,11 +550,18 @@ async function sendMessage() {
                 appendMessage("ai", "Sorry, I couldn't generate a response. Please try again.");
             }
         } else {
-            if (response.status === 401) {
-                appendMessage("ai", "Your session has expired. Please refresh or log in again.");
-            } else {
-                appendMessage("ai", "An error occurred while connecting to the server.");
+            let errorMsg = "An error occurred while connecting to the server.";
+            try {
+                const errData = await response.json();
+                if (errData.message || errData.detail || errData.error) {
+                    errorMsg = errData.message || errData.detail || errData.error;
+                }
+            } catch (e) {
+                if (response.status === 401) {
+                    errorMsg = "Your session has expired. Please refresh or log in again.";
+                }
             }
+            appendMessage("ai", errorMsg);
         }
     } catch (error) {
         console.error("Chat Error:", error);
