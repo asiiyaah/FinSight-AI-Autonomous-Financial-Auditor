@@ -251,7 +251,9 @@ function renderAnalytics(analytics) {
                     </div>
                     <div class="d-flex justify-content-between text-muted-custom mt-1" style="font-size: 0.82rem;">
                         <span>Date: ${anom.date}</span>
-                        <span>Threshold: ${formatCurrency(anom.threshold)}</span>
+                    </div>
+                    <div class="text-muted-custom mt-1" style="font-size: 0.82rem;">
+                        <span class="text-warning">Reason: ${anom.reason || "Unusually high transaction."}</span>
                     </div>
                 `;
                 anomaliesList.appendChild(item);
@@ -276,7 +278,7 @@ function renderAnalytics(analytics) {
                         </div>
                         <div class="text-muted-custom mt-1" style="font-size: 0.82rem;">
                             <span>Detected duplicates on date: ${first.date}</span>
-                            <p class="mb-0 mt-1 small font-monospace">Raw: ${first.raw_description || 'N/A'}</p>
+                            <p class="mb-0 mt-1 small font-monospace">Potential duplicate payment detected.</p>
                         </div>
                     `;
                     duplicatesList.appendChild(item);
@@ -300,7 +302,9 @@ function renderAnalytics(analytics) {
                     </div>
                     <div class="d-flex justify-content-between text-muted-custom mt-1" style="font-size: 0.82rem;">
                         <span>Category: ${sub.category}</span>
-                        <span>Detected in ${sub.months_detected} months (${sub.occurrences} charges)</span>
+                    </div>
+                    <div class="text-muted-custom mt-1" style="font-size: 0.82rem;">
+                        <span class="text-info">${sub.reason || "Recurring payment detected"}</span>
                     </div>
                 `;
                 subscriptionsList.appendChild(item);

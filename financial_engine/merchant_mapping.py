@@ -2,13 +2,19 @@
 
 # We map normalized vendor names to their deterministic category.
 MERCHANT_CATEGORY_MAP = {
-    # Food & Dining
-    'swiggy': 'Food Delivery',
-    'zomato': 'Food Delivery',
-    'mcdonalds': 'Dining',
-    'dominos': 'Dining',
-    'starbucks': 'Dining',
-    'kfc': 'Dining',
+    # Food
+    'swiggy': 'Food',
+    'zomato': 'Food',
+    'mcdonalds': 'Food',
+    'dominos': 'Food',
+    'starbucks': 'Food',
+    'kfc': 'Food',
+    
+    # Housing
+    'rent': 'Housing',
+    'house rent': 'Housing',
+    'apartment rent': 'Housing',
+    'flat rent': 'Housing',
     
     # Groceries
     'blinkit': 'Groceries',
@@ -69,7 +75,7 @@ MERCHANT_CATEGORY_MAP = {
     'mpl': 'Gaming',
     
     # Bank Charges & ATM
-    'atm cash withdrawal': 'Cash Withdrawal',
+    'atm cash withdrawal': 'ATM Withdrawal',
     'bank penalty': 'Bank Charges',
     'bank charges': 'Bank Charges',
     'service charge': 'Bank Charges',
@@ -78,9 +84,9 @@ MERCHANT_CATEGORY_MAP = {
 
 # Mapping of categories to high-level groups
 ESSENTIAL_CATEGORIES = {
-    'Utilities', 'Groceries', 'Transport', 'Healthcare', 'EMI', 'Rent', 'Bills'
+    'Utilities', 'Groceries', 'Transport', 'Healthcare', 'EMI', 'Housing', 'Bills'
 }
 
 DISCRETIONARY_CATEGORIES = {
-    'Food Delivery', 'Dining', 'Shopping', 'Entertainment', 'Subscription', 'Travel'
+    'Food', 'Shopping', 'Entertainment', 'Subscription', 'Travel', 'Gaming'
 }

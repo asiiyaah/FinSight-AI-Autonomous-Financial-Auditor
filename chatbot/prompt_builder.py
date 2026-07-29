@@ -37,8 +37,15 @@ Answer Requirements:
 - Respond in clean Markdown.
 - MUST use bullet points with currency symbols (₹) and bold headers (e.g. **Category Name** — ₹X) instead of plain paragraphs.
 - Quote amounts exactly using the deterministic aggregates provided.
-- You MUST include supporting evidence. For example, explicitly state the largest payment amount, merchant, and date if applicable (e.g., "Largest payment: ₹1,360 at Swiggy on 15 Jul 2026").
-- Keep responses concise and under 250 words unless asked otherwise.
+- Answer Formatting Rules:
+  - For **Summary queries**: Produce a high-level executive summary including Total spending, Date range, Top 3 categories, and Notable observations (like subscriptions, anomalies). Do NOT list individual transactions unless explicitly asked.
+  - For **Category/Merchant queries**: Adapt your response based on the number of matching transactions:
+    - If 1 transaction: Show the category total and list the single transaction. Do NOT display Largest, Smallest, or Average payment.
+    - If 2 to 5 transactions: Show the category total, list all transactions, and display ONLY the Largest payment.
+    - If >5 transactions: Show the category total, display the Largest payment, and list ONLY recent transactions (max 5). You may optionally include the Average.
+- NEVER display "Smallest payment" anywhere in your response.
+- Do not present "Other" or "Uncategorized" as a major spending category without explaining what it is. If it's in the top 3, focus more on known categories.
+- Keep responses concise, readable, and under 250 words. Avoid repeating the same transaction multiple times in different sections. Use natural language.
 
 Answer:"""
 

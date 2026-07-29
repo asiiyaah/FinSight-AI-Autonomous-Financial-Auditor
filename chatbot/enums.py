@@ -11,3 +11,4 @@ class Intent(str, Enum):
     TRANSACTION = "transaction"
     SPENDING_ANALYSIS = "spending_analysis"
     TOP_SPENDING = "top_spending"
+    AUDIT_REQUEST = "audit_request"

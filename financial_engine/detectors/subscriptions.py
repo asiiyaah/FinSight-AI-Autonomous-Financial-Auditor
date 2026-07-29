@@ -3,12 +3,15 @@ from financial_engine.config import CONFIDENCE_WEIGHTS, THRESHOLDS
 import datetime
 import re
 
-SUBSCRIPTION_KEYWORDS = ["autopay", "subscription", "prime", "netflix", "spotify", "premium", "membership", "cloud", "adobe", "microsoft", "apple", "jio fiber"]
+SUBSCRIPTION_KEYWORDS = ["autopay", "subscription", "prime", "netflix", "spotify", "premium", "membership", "cloud", "adobe", "microsoft", "jio fiber"]
+KNOWN_SUBSCRIPTION_MERCHANTS = ["netflix", "spotify", "amazon prime", "hotstar", "jio fiber", "adobe", "microsoft"]
+SHOPPING_MERCHANTS = ["apple", "amazon", "flipkart", "reliance digital", "croma", "myntra", "ajio"]
 SUBSCRIPTION_CATEGORIES = ['Subscription', 'Entertainment']
 
 def detect_subscriptions(transactions: List[Dict], context: Dict) -> List[Dict]:
     """
-    Detects subscriptions by evaluating merchant category, keywords, and recurrence.
+    Detects subscriptions by evaluating merchant category, keywords, and recurrence using a score system.
+    Score >= 3 -> Subscription
     """
     debits = [tx for tx in transactions if tx.get("transaction_type") == "debit"]
     
@@ -28,45 +31,60 @@ def detect_subscriptions(transactions: List[Dict], context: Dict) -> List[Dict]:
         raw_text = " ".join([t.get("raw_description", "") for t in txs]).lower()
         original_vendor = sample_tx.get("vendor", vendor)
         
-        confidence = 0.0
+        score = 0
         reasons = []
         
-        # 1. Category Match
+        vendor_lower = vendor.lower()
+        
+        # 1. Known Subscription Merchant
+        is_known_sub = any(kw in vendor_lower for kw in KNOWN_SUBSCRIPTION_MERCHANTS)
+        if is_known_sub:
+            score += 3
+            reasons.append("Known subscription merchant")
+            
+        # 2. Category Match
         if category in SUBSCRIPTION_CATEGORIES:
-            confidence += CONFIDENCE_WEIGHTS["category_match"]
-            reasons.append(f"Category '{category}' strongly indicates subscription")
-            
-        # 2. Keyword Match
-        keyword_matched = False
-        for kw in SUBSCRIPTION_KEYWORDS:
-            if re.search(r'\b' + re.escape(kw) + r'\b', vendor.lower()) or re.search(r'\b' + re.escape(kw) + r'\b', raw_text):
-                keyword_matched = True
-                break
+            score += 1
+            if not is_known_sub:
+                reasons.append(f"Category '{category}'")
                 
-        if keyword_matched:
-            confidence += CONFIDENCE_WEIGHTS["keyword_match"]
-            reasons.append("Contains subscription-related keywords")
+        # 3. Shopping Merchant Penalty
+        is_shopping = any(kw in vendor_lower for kw in SHOPPING_MERCHANTS)
+        if is_shopping:
+            score -= 3
+            reasons.append("Shopping merchant (requires stronger recurrence)")
             
-        # Ensure we only enrich if there's already some evidence
-        if confidence > 0:
-            # 3. Recurrence Check (Enrichment)
-            unique_months = set((tx["date"].year, tx["date"].month) for tx in txs if isinstance(tx.get("date"), datetime.date))
-            months_detected = len(unique_months)
-            
-            if months_detected >= 2:
-                confidence += CONFIDENCE_WEIGHTS["recurring_enrichment"]
-                reasons.append(f"Recurring pattern over {months_detected} months")
-            
-            # If no strong signals, but lots of small transactions? (Optional heuristic)
-            if months_detected >= 3 and confidence < 0.4:
-                avg_amount = sum(float(t["amount"]) for t in txs) / len(txs)
-                if avg_amount < 5000:
-                    confidence += 0.4
-                    reasons.append("Consistent repeating small payments")
+        # 4. Keyword Match (if not already known sub)
+        if not is_known_sub:
+            keyword_matched = False
+            for kw in SUBSCRIPTION_KEYWORDS:
+                if re.search(r'\b' + re.escape(kw) + r'\b', vendor_lower) or re.search(r'\b' + re.escape(kw) + r'\b', raw_text):
+                    keyword_matched = True
+                    break
+            if keyword_matched:
+                score += 1
+                reasons.append("Contains subscription-related keywords")
                 
+        # 5. Recurrence Check
+        unique_months = set((tx["date"].year, tx["date"].month) for tx in txs if isinstance(tx.get("date"), datetime.date))
+        months_detected = len(unique_months)
+        
+        if months_detected >= 2:
+            score += 2
+            reasons.append("Recurring payment detected")
+            
         # Final Classification
-        if confidence >= THRESHOLDS["subscription_min_confidence"]:
+        if score >= 3:
             avg_amount = sum(float(t["amount"]) for t in txs) / len(txs)
+            
+            # Construct a clean reason for the UI (prioritize main reasons)
+            if "Known subscription merchant" in reasons:
+                ui_reason = "Known subscription merchant"
+            elif "Recurring payment detected" in reasons:
+                ui_reason = "Recurring payment detected"
+            else:
+                ui_reason = reasons[0] if reasons else "Detected via AI rules"
+                
             subscriptions.append({
                 "vendor": original_vendor,
                 "normalized_vendor": vendor,
@@ -74,9 +92,9 @@ def detect_subscriptions(transactions: List[Dict], context: Dict) -> List[Dict]:
                 "occurrences": len(txs),
                 "months_detected": months_detected,
                 "category": category,
-                "confidence": min(0.99, confidence),
+                "confidence": 0.9, # Mapping old confidence concept, though we use score now
                 "source": "deterministic",
-                "reason": " | ".join(reasons)
+                "reason": ui_reason
             })
             
     return subscriptions

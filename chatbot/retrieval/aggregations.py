@@ -39,10 +39,5 @@ def compute_aggregates(transactions: QuerySet) -> Dict[str, Any]:
             "vendor": max_tx.vendor,
             "date": str(max_tx.date)
         },
-        "min": {
-            "amount": float(min_tx.amount),
-            "vendor": min_tx.vendor,
-            "date": str(min_tx.date)
-        },
         "date_range": date_range
     }

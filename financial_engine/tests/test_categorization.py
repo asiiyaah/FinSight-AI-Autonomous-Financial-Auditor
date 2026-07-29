@@ -10,6 +10,6 @@ class NormalizationCategorizationTests(TestCase):
         self.assertEqual(normalize_vendor_name("HDFC BANK LOAN 2023"), "hdfc bank loan")
         self.assertEqual(normalize_vendor_name("POS/123/Starbucks"), "starbucks")
 
-    def test_merchant_mapping(self):
-        self.assertEqual(MERCHANT_CATEGORY_MAP.get("swiggy"), "Food Delivery")
+    def test_deterministic_mapping(self):
+        self.assertEqual(MERCHANT_CATEGORY_MAP.get("swiggy"), "Food")
         self.assertEqual(MERCHANT_CATEGORY_MAP.get("netflix"), "Subscription")

@@ -31,8 +31,8 @@ def detect_anomalies(transactions: List[Dict]) -> List[Dict]:
         for tx in debits:
             amt = float(tx["amount"])
             if amt > threshold:
-                # Add anomaly if not already categorized as Rent or EMI where large amounts are expected
-                if tx.get("category") not in ["Rent", "EMI"]:
+                # Add anomaly if not already categorized as Housing or EMI where large amounts are expected
+                if tx.get("category") not in ["Housing", "EMI"]:
                     anomalies.append({
                         "id": tx.get("id"),
                         "date": str(tx["date"]),

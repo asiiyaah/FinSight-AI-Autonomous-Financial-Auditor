@@ -39,7 +39,9 @@ def generate_deterministic_fallback(context: Dict[str, Any], top_intent: Intent,
             return "No transactions found."
         
         entity_name = entities.get("category") or entities.get("merchant") or ""
-        lines = [f"Found {aggs.get('count', len(txs))} {entity_name} transactions totaling ₹{aggs.get('total', 0):,.2f}.\n".replace("  ", " ")]
+        count = aggs.get('count', len(txs))
+        tx_word = "transaction" if count == 1 else "transactions"
+        lines = [f"Found {count} {entity_name} {tx_word} totaling ₹{aggs.get('total', 0):,.2f}.\n".replace("  ", " ")]
         for tx in txs[:5]:
             lines.append(f"• {tx['date']}: {tx['vendor']} – ₹{tx['amount']:,.2f}")
         return "\n".join(lines)
@@ -88,6 +90,18 @@ def chat_with_statement(statement_id: int, message: str, user=None) -> Dict[str,
         intents, entities = detect_intent(message, focus=focus)
         top_intent = intents[0][0] if intents else Intent.SUMMARY
         logger.info(f"Chatbot processing statement {statement_id} with intents: {intents}")
+        
+        if top_intent == Intent.AUDIT_REQUEST:
+            answer = (
+                "A comprehensive financial audit is available through the **Run AI Audit** feature.\n\n"
+                "Please click the **Run AI Audit** button on the Statement Details page to receive a complete report with spending insights, financial risks, and personalized recommendations.\n\n"
+                "I'm happy to answer specific questions about your statement, such as your spending, cash flow, transactions, subscriptions, EMIs, categories, or anomalies."
+            )
+            return {
+                "success": True,
+                "answer": answer,
+                "intent": top_intent.value if hasattr(top_intent, "value") else top_intent
+            }
 
         # 5. Retrieve structured context
         context = build_context(

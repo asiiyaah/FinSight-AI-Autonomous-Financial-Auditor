@@ -26,6 +26,20 @@ def get_category_for_vendor(normalized_vendor: str) -> Dict[str, str]:
             "confidence": 1.0
         }
         
+    vendor_lower = normalized_vendor.lower()
+    if 'emi' in vendor_lower or 'loan' in vendor_lower:
+        return {
+            "category": "EMI",
+            "source": "deterministic_rule",
+            "confidence": 0.9
+        }
+    if 'rent' in vendor_lower:
+        return {
+            "category": "Housing",
+            "source": "deterministic_rule",
+            "confidence": 0.9
+        }
+        
     try:
         cached = MerchantCategory.objects.get(normalized_vendor=normalized_vendor)
         return {
@@ -63,13 +77,26 @@ def batch_categorize_vendors(normalized_vendors: List[str]) -> Dict[str, Dict[st
     results = {}
     unknown_vendors = []
     
-    # 1. Check deterministic map
+    # 1. Check deterministic map & keyword rules
     for vendor in normalized_vendors:
+        vendor_lower = vendor.lower()
         if vendor in MERCHANT_CATEGORY_MAP:
             results[vendor] = {
                 "category": MERCHANT_CATEGORY_MAP[vendor],
                 "source": "deterministic",
                 "confidence": 1.0
+            }
+        elif 'emi' in vendor_lower or 'loan' in vendor_lower:
+            results[vendor] = {
+                "category": "EMI",
+                "source": "deterministic_rule",
+                "confidence": 0.9
+            }
+        elif 'rent' in vendor_lower:
+            results[vendor] = {
+                "category": "Housing",
+                "source": "deterministic_rule",
+                "confidence": 0.9
             }
         else:
             unknown_vendors.append(vendor)
@@ -129,7 +156,7 @@ def _ai_categorize_vendors(vendors: List[str]) -> Dict[str, str]:
     
     prompt = f"""
     Categorize the following list of Indian merchant/vendor names into one of these categories:
-    Food Delivery, Dining, Groceries, Utilities, Shopping, Subscription, Entertainment, Transport, Travel, EMI, Credit Card Bill, Healthcare, Income, Other.
+    Food, Groceries, Utilities, Housing, Shopping, Subscription, Entertainment, Transport, Travel, EMI, Credit Card Bill, Healthcare, Income, Other.
     
     Vendors:
     {', '.join(vendors)}

@@ -11,7 +11,7 @@ def get_subscription_context(analytics: Dict[str, Any], **kwargs) -> Dict[str, A
     
     return {
         "intent": "SUBSCRIPTION",
-        "aggregates": {
+        "subscription_aggregates": {
             "count": len(subs),
             "total_monthly": total
         },
@@ -27,7 +27,7 @@ def get_emi_context(analytics: Dict[str, Any], **kwargs) -> Dict[str, Any]:
     
     return {
         "intent": "EMI",
-        "aggregates": {
+        "emi_aggregates": {
             "total_monthly_emi": emi.get("total_monthly_emi", 0),
             "count": len(emi.get("loans", []))
         },

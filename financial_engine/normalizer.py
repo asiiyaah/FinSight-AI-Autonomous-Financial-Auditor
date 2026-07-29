@@ -56,5 +56,13 @@ def normalize_vendor_name(vendor: str) -> str:
     words = vendor.split()
     words = [w for w in words if w not in suffixes]
     vendor = ' '.join(words)
-    
+    # Custom normalization for common variations
+    vendor_lower = vendor.lower()
+    if vendor_lower in ['phonepe p2m', 'phone pe', 'phonepe upi']:
+        return 'phonepe'
+    if vendor_lower in ['gpay', 'google pay', 'googlepay']:
+        return 'gpay'
+    if vendor_lower in ['amazon shopping', 'amazon pay']:
+        return 'amazon'
+        
     return vendor or "unknown"

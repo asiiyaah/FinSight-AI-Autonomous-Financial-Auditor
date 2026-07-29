@@ -32,6 +32,10 @@ CATEGORIES = {
     "health": "Healthcare",
     "groceries": "Groceries",
     "entertainment": "Entertainment",
+    "housing": "Housing",
+    "rent": "Housing",
+    "atm": "ATM Withdrawal",
+    "cash": "ATM Withdrawal",
 }
 
 INTENT_RULES = {
@@ -44,4 +48,5 @@ INTENT_RULES = {
     Intent.SUMMARY: ["summary", "summarize", "overall"],
     Intent.CATEGORY: ["category", "breakdown", "food", "travel", "shopping"],
     Intent.TRANSACTION: ["transaction", "spend", "spent", "purchase", "purchases", "amazon", "swiggy", "zomato", "withdrawal", "withdrawals"],
+    Intent.AUDIT_REQUEST: ["audit", "analyze", "evaluate", "report", "health", "assess", "complete analysis", "financial analysis", "review"],
 }
