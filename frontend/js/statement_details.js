@@ -75,9 +75,11 @@ async function fetchStatementDetails() {
                 return;
             }
             if (response.status === 404) {
-                showToast("Statement could not be found.");
+                console.error("Statement not found");
+                loadingState.classList.add("d-none");
+                showToast("We couldn't load your statement details. Please try again.");
             } else {
-                showToast("Error loading statement details.");
+                showToast("We couldn't load your statement details. Please try again.");
             }
             setTimeout(() => { window.location.href = "dashboard.html"; }, 1500);
             return;
@@ -88,7 +90,7 @@ async function fetchStatementDetails() {
 
     } catch (error) {
         console.error(error);
-        showToast("Failed to connect to the server.");
+        showToast("Unable to reach the server. Please check your connection and try again.");
         setTimeout(() => { window.location.href = "dashboard.html"; }, 1500);
     }
 }
@@ -432,11 +434,11 @@ runAuditBtn.addEventListener("click", async () => {
                 setTimeout(() => { window.location.href = "dashboard.html"; }, 1500);
                 return;
             }
-            const errData = await response.json();
-            showToast(`AI Audit run failed: ${errData.error || response.statusText}`);
+            const errData = await response.json().catch(() => ({}));
+            showToast(`We couldn't process your audit request: ${errData.error || "Please try again."}`);
+            auditProgress.classList.add("d-none");
             runAuditBtn.disabled = false;
             runAuditBtn.classList.remove("d-none");
-            auditProgress.classList.add("d-none");
             return;
         }
 
@@ -453,10 +455,10 @@ runAuditBtn.addEventListener("click", async () => {
 
     } catch (error) {
         console.error(error);
-        showToast("Server error occurred while executing AI Audit.");
+        showToast("Unable to reach the server. Please check your connection and try again.");
+        auditProgress.classList.add("d-none");
         runAuditBtn.disabled = false;
         runAuditBtn.classList.remove("d-none");
-        auditProgress.classList.add("d-none");
     }
 });
 
@@ -481,6 +483,22 @@ chatToggleBtn.addEventListener("click", () => {
 
 chatCloseBtn.addEventListener("click", () => {
     chatWindow.classList.add("d-none");
+});
+
+// Close chat when clicking outside
+document.addEventListener("click", (e) => {
+    if (!chatWindow.classList.contains("d-none") &&
+        !chatWindow.contains(e.target) &&
+        !chatToggleBtn.contains(e.target)) {
+        chatWindow.classList.add("d-none");
+    }
+});
+
+// Close chat on Escape key
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !chatWindow.classList.contains("d-none")) {
+        chatWindow.classList.add("d-none");
+    }
 });
 
 // Format basic markdown (line breaks, bold)
@@ -563,6 +581,8 @@ async function sendMessage() {
             } catch (e) {
                 if (response.status === 401) {
                     errorMsg = "Your session has expired. Please refresh or log in again.";
+                } else {
+                    errorMsg = "Your session has expired. Please refresh or log in again.";
                 }
             }
             appendMessage("ai", errorMsg);
@@ -570,7 +590,7 @@ async function sendMessage() {
     } catch (error) {
         console.error("Chat Error:", error);
         removeTypingIndicator();
-        appendMessage("ai", "A network error occurred. Please try again later.");
+        appendMessage("ai", "Unable to reach the server. Please check your connection and try again.");
     } finally {
         chatInput.disabled = false;
         chatSendBtn.disabled = false;

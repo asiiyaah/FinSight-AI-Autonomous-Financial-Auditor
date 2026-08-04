@@ -44,10 +44,18 @@
           <input type="file" id="file-input" accept=".pdf" hidden />
         </div>
 
-        <div id="file-name" class="file-name">No file selected</div>
+        <div class="file-name-container d-flex justify-content-center align-items-center gap-2 mb-3">
+          <div id="file-name" class="file-name m-0">No file selected</div>
+          <button id="clear-file-btn" type="button" class="btn btn-link text-danger p-0 d-none" style="font-size: 1.1rem; text-decoration: none;" title="Remove file">
+            <i class="bi bi-x-circle-fill"></i>
+          </button>
+        </div>
 
         <button id="upload-btn" type="button" class="primary-btn upload-btn">
           <i class="bi bi-cloud-upload me-2"></i>Upload Statement
+        </button>
+        <button id="cancel-upload-btn" type="button" class="btn btn-outline-danger d-none w-100 mt-2">
+          Cancel Upload
         </button>
 
         <!-- Progress Bar (hidden until upload starts) -->

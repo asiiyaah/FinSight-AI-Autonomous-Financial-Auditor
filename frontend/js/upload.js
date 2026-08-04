@@ -16,9 +16,39 @@ const progressFill = document.getElementById("progress-fill");
 const progressLabel = document.getElementById("progress-step-label");
 const progressCounter = document.getElementById("progress-step-counter");
 const progressSub = document.getElementById("progress-sub-label");
+const clearFileBtn = document.getElementById("clear-file-btn");
+
+const cancelUploadBtn = document.getElementById("cancel-upload-btn");
+
+// ── Toast Notification System ────────────────────────
+function showToast(message) {
+    const toast = document.createElement("div");
+    toast.textContent = message;
+    toast.style.position = "fixed";
+    toast.style.bottom = "20px";
+    toast.style.left = "50%";
+    toast.style.transform = "translateX(-50%)";
+    toast.style.backgroundColor = "#333";
+    toast.style.color = "#fff";
+    toast.style.padding = "10px 20px";
+    toast.style.borderRadius = "5px";
+    toast.style.zIndex = "9999";
+    toast.style.boxShadow = "0 2px 10px rgba(0,0,0,0.2)";
+    document.body.appendChild(toast);
+    setTimeout(() => {
+        toast.remove();
+    }, 3000);
+}
 
 const BASE_URL = "http://127.0.0.1:8000/api/v1";
 let selectedFile = null;
+let uploadController = null;
+
+cancelUploadBtn.addEventListener("click", () => {
+    if (uploadController) {
+        uploadController.abort();
+    }
+});
 
 // ── Progress bar helpers ──────────────────────────────
 const STEPS = [
@@ -79,6 +109,7 @@ fileInput.addEventListener("change", (event) => {
     selectedFile = file;
     fileNameEl.textContent = file.name;
     statusBox.textContent = "";
+    clearFileBtn.classList.remove("d-none");
 });
 
 ["dragenter", "dragover"].forEach(eventName => {
@@ -104,11 +135,20 @@ dropZone.addEventListener("drop", (e) => {
             selectedFile = file;
             fileNameEl.textContent = file.name;
             statusBox.textContent = "";
+            clearFileBtn.classList.remove("d-none");
         } else {
             statusBox.textContent = "Only PDF files are supported.";
             statusBox.className = "status-box text-danger";
         }
     }
+});
+
+clearFileBtn.addEventListener("click", () => {
+    selectedFile = null;
+    fileInput.value = "";
+    fileNameEl.textContent = "No file selected";
+    clearFileBtn.classList.add("d-none");
+    statusBox.textContent = "";
 });
 
 // ── Upload handler ───────────────────────────────────
@@ -137,21 +177,29 @@ uploadBtn.addEventListener("click", async (event) => {
     // Step 1 — Uploading (20%)
     setProgress(0);
 
+    // Setup abort controller
+    uploadController = new AbortController();
+    cancelUploadBtn.classList.remove("d-none");
+    clearFileBtn.classList.add("d-none"); // Hide clear button during upload
+
     try {
         const response = await fetch(`${BASE_URL}/statements/upload/`, {
             method: "POST",
             headers: { Authorization: `Bearer ${token}` },
-            body: formData
+            body: formData,
+            signal: uploadController.signal
         });
 
         const data = await response.json();
 
         if (!response.ok) {
-            setProgressError(data.error || data.message || "Upload failed.");
-            statusBox.textContent = data.error || data.message || "Upload failed.";
+            setProgressError(data.error || data.message || "We couldn't process your request. Please try again.");
+            showToast(data.error || data.message || "We couldn't process your request. Please try again.");
+            statusBox.textContent = "";
             statusBox.className = "status-box text-danger";
             uploadBtn.disabled = false;
             uploadBtn.innerHTML = `<i class="bi bi-cloud-upload me-2"></i>Upload Statement`;
+            cancelUploadBtn.classList.add("d-none");
             return;
         }
 
@@ -170,15 +218,26 @@ uploadBtn.addEventListener("click", async (event) => {
         // Step 5 — Done (100%)
         setProgress(4, "complete");
         progressLabel.textContent = `Done — ${data.transactions_parsed} transactions extracted`;
+        
+        cancelUploadBtn.classList.add("d-none");
+        showToast("Upload successful! Redirecting to statement details...");
 
         localStorage.setItem("refresh_dashboard", "1");
         await delay(900);
         window.location.href = `statement_details.html?id=${data.statement_id}`;
 
     } catch (error) {
-        console.error(error);
-        setProgressError("Network error. Please check your connection.");
-        statusBox.textContent = "Network error. Please try again.";
+        cancelUploadBtn.classList.add("d-none");
+        if (error.name === "AbortError") {
+            setProgressError("Upload canceled by user.");
+            showToast("Upload canceled.");
+            statusBox.textContent = "";
+        } else {
+            console.error(error);
+            setProgressError("Unable to reach the server. Please check your connection and try again.");
+            showToast("Unable to reach the server. Please check your connection and try again.");
+            statusBox.textContent = "";
+        }
         statusBox.className = "status-box text-danger";
         uploadBtn.disabled = false;
         uploadBtn.innerHTML = `<i class="bi bi-cloud-upload me-2"></i>Upload Statement`;

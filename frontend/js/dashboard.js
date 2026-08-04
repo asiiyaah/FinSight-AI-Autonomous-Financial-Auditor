@@ -89,6 +89,10 @@ async function loadUser() {
 
     } catch (error) {
         console.error("loadUser error:", error);
+        document.getElementById("recent-loading").classList.add("d-none");
+        const recentList = document.getElementById("recent-list");
+        recentList.innerHTML = `<div class="text-center py-3 text-danger">We couldn't load your dashboard. Please refresh to try again.</div>`;
+        recentList.classList.remove("d-none");
     }
 }
 
@@ -217,6 +221,9 @@ function renderDashboardData(data) {
     } catch (error) {
         console.error("loadDashboardData error:", error);
         document.getElementById("recent-loading").classList.add("d-none");
+        const recentList = document.getElementById("recent-list");
+        recentList.innerHTML = `<div class="text-center py-3 text-danger">We couldn't load your recent statements. Please try again.</div>`;
+        recentList.classList.remove("d-none");
     }
 }
 

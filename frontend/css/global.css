@@ -63,6 +63,7 @@ a {
     border-radius: var(--radius-card);
     box-shadow: var(--card-shadow);
     border: 1px solid var(--border);
+    padding: 24px;
 }
 
 .primary-btn {
@@ -75,9 +76,19 @@ a {
     transition: 0.3s ease;
 }
 
-.primary-btn:hover {
+.primary-btn:hover:not(:disabled) {
     background: var(--primary-dark);
     box-shadow: var(--glow-shadow);
+}
+
+.primary-btn:focus-visible, a:focus-visible, button:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+.primary-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
 .text-muted-custom {

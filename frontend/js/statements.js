@@ -89,9 +89,9 @@ function renderStatements(statements) {
 
         const txCount = stmt.transaction_count ?? "—";
         const auditStatusLabel = stmt.audit_status === "completed"
-            ? '<span class="text-success"><i class="bi bi-cpu-fill me-1"></i>AI Audited</span>'
+            ? '<span class="text-success" title="AI Audited"><i class="bi bi-cpu-fill me-1"></i>Audited</span>'
             : stmt.audit_status === "analytics_ready"
-            ? '<span class="text-primary"><i class="bi bi-bar-chart me-1"></i>Analytics Ready</span>'
+            ? '<span class="text-primary" title="Analytics Ready"><i class="bi bi-bar-chart me-1"></i>Ready</span>'
             : '<span class="text-muted-custom">Not Audited</span>';
 
         col.innerHTML = `
@@ -197,7 +197,7 @@ async function fetchStatements(page = 1) {
         loadingState.classList.add("d-none");
         statementsGrid.innerHTML = `
             <div class="col-12 text-center py-5">
-                <p class="text-muted-custom">Failed to load statements. Please refresh the page.</p>
+                <p class="text-danger">We couldn't load your statements. Please refresh the page to try again.</p>
             </div>`;
         statementsContainer.classList.remove("d-none");
     }
@@ -234,11 +234,11 @@ confirmDeleteBtn.addEventListener("click", async () => {
             }
         } else {
             const errData = await response.json().catch(() => ({}));
-            showToast(errData.error || "Delete failed. Please try again.");
+            showToast(errData.error || "We couldn't delete the statement. Please try again.");
         }
     } catch (error) {
         console.error(error);
-        showToast("Network error. Could not delete statement.");
+        showToast("Unable to reach the server. Please check your connection and try again.");
     } finally {
         confirmDeleteBtn.disabled = false;
         confirmDeleteBtn.innerHTML = `<i class="bi bi-trash3 me-1"></i>Delete`;
