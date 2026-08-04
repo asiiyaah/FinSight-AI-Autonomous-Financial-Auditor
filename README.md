@@ -91,13 +91,56 @@ Powered by Google Gemini, the AI Audit layer takes the structured *Financial Int
 
 ---
 
-## 🚀 What's Coming (Roadmap)
+## 📊 Current Progress
 
-- [ ] **Multi-Month Trend Analysis**: Compare spending habits across multiple months and quarters.
-- [ ] **Export to CSV/PDF**: Allow users to export the final AI audit and deterministic tables into beautiful PDF reports.
-- [ ] **Support for More Banks**: Expanding the parser to support native PDF formats for 15+ major global banks without relying on OCR.
-- [ ] **Custom Budgets**: Users can set budget limits on categories and the AI will track adherence.
-- [ ] **Dockerization**: Easy 1-click deployment using Docker and Docker Compose.
+```text
+███████████████████████░░ 95%
+
+✅ Core Features
+✅ Analytics
+✅ AI Audit
+✅ Chatbot
+✅ UI Polish
+✅ Upload Robustness
+⬜ Database Validation
+⬜ Documentation
+⬜ PostgreSQL Migration
+⬜ Deployment
+```
+
+## 🚀 Development Roadmap
+
+### ✅ Phase 1: Core Platform (Completed)
+- [x] JWT Authentication & Protected Routes
+- [x] Drag & Drop PDF Upload Pipeline
+- [x] Gemini-Powered Parsing & PII Redaction
+- [x] Deterministic Financial Intelligence Engine (Cashflow, Anomalies, Subscriptions, EMIs)
+- [x] AI Audit Engine (Risk Assessment & Verdicts)
+- [x] RAG-powered Conversational Chatbot
+- [x] Interactive UI Dashboard
+
+### 🚧 Phase 2: Stabilization (In Progress)
+- [x] Upload Pipeline Robustness & Atomic Transactions
+- [ ] Database Validation & Cascade Deletes
+- [ ] MerchantCategory Caching & Integrity Checks
+- [ ] Final QA & Edge-case Handling
+
+### 📦 Phase 3 & 4: Cleanup and Documentation
+- [ ] Remove unused code, debug prints, and TODOs
+- [ ] Protect Secrets and organize `.gitignore`
+- [ ] Complete Architecture Diagrams and Setup Guides
+
+### 🐘 Phase 5 & 6: Production Deployment
+- [ ] Migrate SQLite to PostgreSQL
+- [ ] Configure Environment Variables and Production Settings
+- [ ] Deploy PostgreSQL, Django Backend, and Frontend
+
+### 🌱 Future Enhancements (Post-v1)
+- [ ] Background processing with Celery + Redis
+- [ ] Multi-month Trend Analysis
+- [ ] Export AI Audit (PDF/CSV)
+- [ ] Budget planning & forecasting
+- [ ] Multi-language support
 
 ---
 
