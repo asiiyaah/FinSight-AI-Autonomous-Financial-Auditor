@@ -79,11 +79,10 @@ def parse_statement(statement):
                 if page_text:
                     raw_text += page_text + "\n"
     except Exception as e:
-        print(f"PdfPlumber failed! :{e}")
-        return 0
+        raise ValueError(f"Failed to read PDF file: {str(e)}")
 
     if not raw_text.strip():
-        return 0
+        raise ValueError("No text could be extracted from the PDF.")
 
     # Redact sensitive PII before transmitting to external API
     redacted_text = redact_sensitive_info(raw_text)
@@ -127,8 +126,7 @@ def parse_statement(statement):
     try:
         transactions = result.get("transactions", [])
         if not transactions:
-            print("No transactions extracted from Gemini.")
-            return 0
+            raise ValueError("No transactions could be extracted from the document.")
         
         transactions_to_create = []
 
@@ -172,5 +170,7 @@ def parse_statement(statement):
         return len(transactions_to_create)
 
     except Exception as e:
-        print(f"Database insertion failed! :{e}")
-        return 0
+        # If it's already a ValueError, let it bubble up
+        if isinstance(e, ValueError):
+            raise e
+        raise Exception(f"Failed to process transactions: {str(e)}")

@@ -1,4 +1,5 @@
 from rest_framework.views import APIView
+from django.db import transaction
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -99,55 +100,73 @@ class StatementUploadView(APIView):
         file=request.FILES.get('file')
 
         if not file:
-            return Response({"error": "FILE NOT PROVIDED"},status=status.HTTP_400_BAD_REQUEST)
+            return Response({"success": False, "error_code": "NO_FILE", "message": "File not provided"},status=status.HTTP_400_BAD_REQUEST)
         
         file_name=file.name
         if not file_name.endswith('.pdf'):
-            return Response({"error": "Only PDF files are allowed"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"success": False, "error_code": "INVALID_FORMAT", "message": "Only PDF files are allowed"}, status=status.HTTP_400_BAD_REQUEST)
 
-        statement=Statement.objects.create(
-            user=request.user,
-            file=file,
-            file_name=file_name,
-        )
-        
+        # Temporary variable to track the statement so we can delete the file on failure
+        temp_statement = None
+
         try:
-            count=parse_statement(statement)
+            with transaction.atomic():
+                statement = Statement.objects.create(
+                    user=request.user,
+                    file=file,
+                    file_name=file_name,
+                )
+                temp_statement = statement
+                
+                count = parse_statement(statement)
+
+                if count == 0:
+                    raise ValueError("No transactions found in the parsed document.")
+
+            # If we reach here, the transaction was committed successfully!
+            return Response(
+                {
+                    "message": "Statement uploaded successfully",
+                    "statement_id": statement.id,
+                    "file_name": statement.file_name,
+                    "uploaded_at": statement.uploaded_at,
+                    "transactions_parsed": count,
+                },status=status.HTTP_200_OK
+            )
+
         except LLMError as e:
-            statement.audit_status = "failed"
-            statement.save()
-            # Delete partial transactions just in case
-            statement.transactions.all().delete()
+            if temp_statement and temp_statement.file:
+                temp_statement.file.delete(save=False)
             return Response(
                 {
                     "success": False,
                     "error_code": type(e).__name__,
-                    "error": str(e)
+                    "message": str(e)
                 },
                 status=status.HTTP_502_BAD_GATEWAY
             )
-
-#DESTRUCTION OF UNPARSED DOCUMENTS
-        # =========================================================
-        if count == 0:
-            statement.delete()  
+        except ValueError as e:
+            if temp_statement and temp_statement.file:
+                temp_statement.file.delete(save=False)
             return Response(
                 {
-                    "error": "Failed to parse transactions",
-                    "message": "Upload aborted to prevent database pollution. Verify the file format or try again."
+                    "success": False,
+                    "error_code": "PARSE_ERROR",
+                    "message": str(e)
                 },
                 status=status.HTTP_422_UNPROCESSABLE_ENTITY
             )
-
-        return Response(
-            {
-            "message": "Statement uploaded successfully",
-            "statement_id": statement.id,
-            "file_name": statement.file_name,
-            "uploaded_at": statement.uploaded_at,
-            "transactions_parsed": count,
-            },status=status.HTTP_200_OK
-        )
+        except Exception as e:
+            if temp_statement and temp_statement.file:
+                temp_statement.file.delete(save=False)
+            return Response(
+                {
+                    "success": False,
+                    "error_code": "INTERNAL_ERROR",
+                    "message": "An unexpected error occurred during upload."
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
     
 class StatementAuditView(APIView):
     permission_classes=[IsAuthenticated]
