@@ -44,6 +44,7 @@ MERCHANT_CATEGORY_MAP = {
     'netflix': 'Subscription',
     'amazon prime': 'Subscription',
     'spotify': 'Subscription',
+    'spotify premium': 'Subscription',
     'hotstar': 'Subscription',
     'bookmyshow': 'Entertainment',
     'pvrcinemas': 'Entertainment',

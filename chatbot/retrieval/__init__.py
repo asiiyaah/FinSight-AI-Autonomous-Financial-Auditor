@@ -28,6 +28,9 @@ INTENT_HANDLERS: Dict[Intent, List[Callable]] = {
         get_cashflow_context, get_category_context, 
         get_recommendation_context, get_summary_context
     ],
+    Intent.AUDIT_REQUEST: [
+        get_summary_context, get_recommendation_context
+    ],
 }
 
 def build_context(statement: Statement, intents: List[Tuple[Intent, float]], entities: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:

@@ -1,4 +1,5 @@
 import time
+import re
 from typing import List, Dict, Set
 from services.llm import get_llm_provider
 from django.conf import settings
@@ -27,7 +28,7 @@ def get_category_for_vendor(normalized_vendor: str) -> Dict[str, str]:
         }
         
     vendor_lower = normalized_vendor.lower()
-    if 'emi' in vendor_lower or 'loan' in vendor_lower:
+    if re.search(r'\b(emi|loan)\b', vendor_lower):
         return {
             "category": "EMI",
             "source": "deterministic_rule",
@@ -86,7 +87,7 @@ def batch_categorize_vendors(normalized_vendors: List[str]) -> Dict[str, Dict[st
                 "source": "deterministic",
                 "confidence": 1.0
             }
-        elif 'emi' in vendor_lower or 'loan' in vendor_lower:
+        elif re.search(r'\b(emi|loan)\b', vendor_lower):
             results[vendor] = {
                 "category": "EMI",
                 "source": "deterministic_rule",

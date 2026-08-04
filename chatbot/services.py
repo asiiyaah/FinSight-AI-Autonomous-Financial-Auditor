@@ -92,16 +92,17 @@ def chat_with_statement(statement_id: int, message: str, user=None) -> Dict[str,
         logger.info(f"Chatbot processing statement {statement_id} with intents: {intents}")
         
         if top_intent == Intent.AUDIT_REQUEST:
-            answer = (
-                "A comprehensive financial audit is available through the **Run AI Audit** feature.\n\n"
-                "Please click the **Run AI Audit** button on the Statement Details page to receive a complete report with spending insights, financial risks, and personalized recommendations.\n\n"
-                "I'm happy to answer specific questions about your statement, such as your spending, cash flow, transactions, subscriptions, EMIs, categories, or anomalies."
-            )
-            return {
-                "success": True,
-                "answer": answer,
-                "intent": top_intent.value if hasattr(top_intent, "value") else top_intent
-            }
+            if not statement.ai_audit:
+                answer = (
+                    "A comprehensive financial audit has not been generated yet.\n\n"
+                    "Please click the **Run AI Audit** button on the Statement Details page to generate your audit.\n\n"
+                    "Once it's ready, I can explain the audit findings, risk assessment, recommendations, and answer questions about it."
+                )
+                return {
+                    "success": True,
+                    "answer": answer,
+                    "intent": top_intent.value if hasattr(top_intent, "value") else top_intent
+                }
 
         # 5. Retrieve structured context
         context = build_context(
