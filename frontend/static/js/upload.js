@@ -192,8 +192,9 @@ uploadBtn.addEventListener("click", async (event) => {
         const data = await response.json();
 
         if (!response.ok) {
-            setProgressError(data.error || data.message || "We couldn't process your request. Please try again.");
-            showToast(data.error || data.message || "We couldn't process your request. Please try again.");
+            const safeMessage = data.error || data.message || "AI parsing is temporarily unavailable. Please try again later.";
+            setProgressError(safeMessage);
+            showToast(safeMessage);
             statusBox.textContent = "";
             statusBox.className = "status-box text-danger";
             uploadBtn.disabled = false;

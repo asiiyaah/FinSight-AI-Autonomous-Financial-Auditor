@@ -1,3 +1,4 @@
+import logging
 import pandas as pd
 import pdfplumber as pl
 from .models import Transaction
@@ -5,9 +6,12 @@ from django.conf import settings
 import time
 import re
 from services.llm import get_llm_provider
+from services.llm.exceptions import LLMError
 
 from pydantic import BaseModel,Field
 from financial_engine.pii_redactor import redact_sensitive_info
+
+logger = logging.getLogger(__name__)
 
 #schema for gemini using pydantic
 class ExtractedTransaction(BaseModel):

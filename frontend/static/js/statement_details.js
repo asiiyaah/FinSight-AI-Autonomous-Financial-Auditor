@@ -438,7 +438,8 @@ runAuditBtn.addEventListener("click", async () => {
                 return;
             }
             const errData = await response.json().catch(() => ({}));
-            showToast(`We couldn't process your audit request: ${errData.error || "Please try again."}`);
+            const message = errData.error || errData.message || "AI audit generation is temporarily unavailable. Please try again later.";
+            showToast(message);
             auditProgress.classList.add("d-none");
             runAuditBtn.disabled = false;
             runAuditBtn.classList.remove("d-none");
@@ -634,7 +635,7 @@ async function sendMessage() {
                 appendMessage("ai", "Sorry, I couldn't generate a response. Please try again.");
             }
         } else {
-            let errorMsg = "An error occurred while connecting to the server.";
+            let errorMsg = "Unable to generate a response right now. Please try again later.";
             try {
                 const errData = await response.json();
                 if (errData.message || errData.detail || errData.error) {
@@ -642,8 +643,6 @@ async function sendMessage() {
                 }
             } catch (e) {
                 if (response.status === 401) {
-                    errorMsg = "Your session has expired. Please refresh or log in again.";
-                } else {
                     errorMsg = "Your session has expired. Please refresh or log in again.";
                 }
             }

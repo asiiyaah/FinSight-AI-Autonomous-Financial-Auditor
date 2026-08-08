@@ -176,7 +176,7 @@ class StatementUploadView(APIView):
                     "error_code": type(e).__name__,
                     "message": str(e)
                 },
-                status=status.HTTP_502_BAD_GATEWAY
+                status=getattr(e, "status_code", status.HTTP_502_BAD_GATEWAY)
             )
         except ValueError as e:
             if temp_statement and temp_statement.file:
@@ -254,15 +254,15 @@ class StatementAuditView(APIView):
                     "error_code": type(e).__name__,
                     "error": str(e)
                 },
-                status=status.HTTP_502_BAD_GATEWAY
+                status=getattr(e, "status_code", status.HTTP_502_BAD_GATEWAY)
             )
-        except Exception as e:
+        except Exception:
+            logger.exception("Unexpected audit failure for statement %s", statement.id)
             return Response(
                 {
                     "success": False,
                     "error_code": "INTERNAL_ERROR",
-                    "error": "Failed to complete audit",
-                    "details": str(e)
+                    "error": "Failed to complete audit. Please try again later."
                 },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )

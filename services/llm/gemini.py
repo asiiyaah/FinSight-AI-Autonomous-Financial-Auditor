@@ -28,10 +28,14 @@ class GeminiProvider(LLMProvider):
 
     def _log_error(self, e: Exception):
         logger.error(
-            f"LLM Provider Error | Provider: {self.provider_name} | Model: {self.model} | "
-            f"Operation: {self.operation} | Statement: {self.statement_id} | User: {self.user_id}\n"
-            f"Error Details: {str(e)}",
-            exc_info=True
+            "LLM Provider Error | Provider: %s | Model: %s | Operation: %s | Statement: %s | User: %s | Error: %s",
+            self.provider_name,
+            self.model,
+            self.operation,
+            self.statement_id,
+            self.user_id,
+            str(e),
+            exc_info=True,
         )
 
     def _classify_and_raise(self, e: Exception):
@@ -42,7 +46,8 @@ class GeminiProvider(LLMProvider):
         if any(keyword in error_str for keyword in [
             "GenerateRequestsPerDayPerProjectPerModel-FreeTier",
             "generate_content_free_tier_requests",
-            "RESOURCE_EXHAUSTED"
+            "RESOURCE_EXHAUSTED",
+            "quota"
         ]):
             raise LLMQuotaError(
                 original_exception=e, provider=self.provider_name, operation=self.operation
@@ -55,20 +60,27 @@ class GeminiProvider(LLMProvider):
             )
             
         # 3. Rate Limit / Transient
-        if "429" in error_str or "503" in error_str or "RetryInfo" in error_str:
+        if "429" in error_str or "503" in error_str or "RetryInfo" in error_str or "rate limit" in error_str.lower():
             raise LLMRateLimitError(
                 original_exception=e, provider=self.provider_name, operation=self.operation
             )
             
         # 4. Network Errors (catch-all for connection-related issues)
-        if "Connection" in error_str or "Timeout" in error_str or "ReadTimeout" in error_str:
+        if isinstance(e, (TimeoutError, ConnectionError)) or any(keyword in error_str for keyword in [
+            "Connection",
+            "Timeout",
+            "ReadTimeout",
+            "Failed to connect",
+            "Connection reset",
+            "Name or service not known",
+            "temporarily unavailable"
+        ]):
             raise LLMNetworkError(
                 original_exception=e, provider=self.provider_name, operation=self.operation
             )
             
         # 5. Generic Provider Error
         raise LLMProviderError(
-            message=f"Gemini API Error: {error_str}",
             original_exception=e, provider=self.provider_name, operation=self.operation
         )
 

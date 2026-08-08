@@ -35,6 +35,14 @@ Chatbot / Statement Retrieval
 - **Layer A**: deterministic parsing and analytics
 - **Layer B**: Gemini-powered AI audit and chatbot response generation
 
+## AI / Gemini Limitation Notes ⚠️
+
+- Gemini availability depends on the external Gemini API and can be interrupted by quota, rate limits, network failures, or service outages.
+- If AI parsing fails during PDF upload, FinSight returns a safe failure message and removes the partially uploaded statement file to avoid inconsistent state.
+- If AI audit generation fails, the app keeps existing deterministic analytics intact and returns a controlled error response without overwriting any successful audit results.
+- Chatbot responses also handle Gemini errors gracefully and fall back to safe messaging when the AI service is unavailable.
+- Deterministic Layer A analytics remain separate from AI Layer B audit generation, so the app still supports statement parsing and deterministic analytics even when Gemini is unavailable.
+
 ## Tech Stack 🛠
 
 - **Backend**: Django, Django REST Framework, Simple JWT

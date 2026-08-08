@@ -1,9 +1,13 @@
+import logging
 from typing import Dict, Any, List
 import time
 from services.llm import get_llm_provider
+from services.llm.exceptions import LLMError, LLMProviderError
 from audits.schemas import AIAuditSchema
 from audits.prompts import build_audit_prompt
 from django.conf import settings
+
+logger = logging.getLogger(__name__)
 
 def get_top_categories(category_breakdown, top_n=3):
     sorted_categories = sorted(
