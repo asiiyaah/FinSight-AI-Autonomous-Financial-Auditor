@@ -94,3 +94,16 @@
     padding: 12px 24px !important;
     font-size: 0.95rem;
 }
+
+.custom-icon-btn {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    border-radius: var(--radius-pill);
+}
+
+.custom-icon-btn:hover, .custom-icon-btn:active {
+    background: var(--bg-secondary);
+    color: var(--primary);
+    border: 1px solid var(--border);
+}

@@ -16,6 +16,15 @@ class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['username', 'email', 'password','first_name', 'last_name']
+        
+    def validate_password(self, value):
+        import django.contrib.auth.password_validation as validators
+        from django.core.exceptions import ValidationError
+        try:
+            validators.validate_password(password=value)
+        except ValidationError as e:
+            raise serializers.ValidationError(list(e.messages))
+        return value
    
 
 # overrides Django's default save button
