@@ -1,147 +1,178 @@
-# FinSight: Autonomous Financial Auditor 🚀
+# FinSight — AI-Powered Financial Statement Auditing Platform
 
-FinSight is a sophisticated, AI-assisted financial auditing application that allows users to upload PDF bank statements and receive deep, actionable insights into their spending habits, recurring obligations, and financial risks. 
+FinSight allows users to securely upload PDF bank statements and receive automated financial analysis, risk detection, and AI-powered audit insights.
+The project combines deterministic statement parsing with Gemini-backed AI audit and chatbot features, all served through a Django backend.
 
-The system employs a strict two-layer architecture, separating deterministic financial logic from generative AI analysis to ensure absolute accuracy and prevent hallucinations.
+## Key Features
 
----
+- PDF statement upload and secure backend file access
+- Deterministic transaction extraction and analytics
+- PII redaction before external AI processing
+- Merchant normalization, duplicate detection, subscription/EMI detection, anomaly detection, and cashflow insights
+- AI audit generation using Google Gemini (real or mock mode)
+- Statement chatbot with retrieval-aware context
+- JWT authentication via Django REST Framework and Simple JWT
+- Frontend delivered through Django static files and `collectstatic`
 
-## 🌟 Detailed Features
+## Architecture / Workflow
 
-### 1. Financial Intelligence Engine (Deterministic Layer)
-The core of FinSight is a highly modular, deterministic analytics engine. It acts as the single source of truth for all objective financial facts.
-- **Strict PII Redaction**: Strips all Personal Identifiable Information (PII) before any data ever reaches the AI layer.
-- **Intelligent Parsing**: Extracts raw transactional data directly from PDF bank statements.
-- **Vendor Normalization & Categorization**: Cleans messy vendor strings and maps them to categories (*Groceries, Utilities, Entertainment*). Unknown vendors are automatically categorized using AI and cached in the database to optimize future audits.
-- **Subscriptions vs. Recurring Bills**: Dynamically detects and isolates entertainment subscriptions (Netflix, Prime) from recurring utility bills (Electricity, Broadband) using intelligent confidence scoring (Category + Keywords + Recurrence Enrichment).
-- **Loan & EMI Detection**: Explicitly identifies active monthly loan obligations and EMIs with strict gatekeeping (using exact keywords like *ECS, Installment*) to prevent false positives.
-- **Duplicate Detection**: Flags identical charges happening on the same day.
-- **Anomaly Detection**: Combines statistical IQR boundary analysis with hardcoded financial rules to flag unusual spending, large ATM withdrawals, and bank penalties.
-- **Income & Cashflow Analysis**: Tracks primary salary sources, total inflows, outflows, and calculates overall cashflow health.
+User
+  ↓
+Frontend
+  ↓
+Django REST API
+  ↓
+PDF Processing + PII Redaction
+  ↓
+Financial Intelligence Engine (Layer A)
+  ↓
+AI Audit / Gemini (Layer B)
+  ↓
+Audit Results + Insights
+  ↓
+Chatbot / Statement Retrieval
 
-### 2. AI Audit Engine (Generative Layer)
-Powered by Google Gemini, the AI Audit layer takes the structured *Financial Intelligence Object* produced by the deterministic engine and generates a comprehensive risk assessment.
-- **Contextual Reasoning**: Generates a Final Verdict, Suspicious Activity list, and Actionable Recommendations.
-- **Strict Guardrails**: The AI is strictly prohibited from doing math, recalculating anomalies, or identifying subscriptions. It acts purely as a financial advisor interpreting the facts.
+- **Layer A**: deterministic parsing and analytics
+- **Layer B**: Gemini-powered AI audit and chatbot response generation
 
-### 3. Conversational AI Chatbot
-- An integrated chat interface allows users to ask open-ended questions about their uploaded statement (e.g., *"How much did I spend on food this month?"* or *"Can I afford a new car?"*).
-- The bot leverages contextual retrieval, seamlessly injecting the deterministic findings into the prompt to provide accurate, personalized advice.
+## Tech Stack
 
-### 4. Interactive Dashboard
-- **Modern UI**: Built with HTML, Vanilla JavaScript, and Bootstrap.
-- **Statement Lifecycle Management**: Upload, view, audit, and cleanly delete statements.
-- **Visual Analytics**: Interactive tabs displaying Cashflow, Anomalies, Duplicates, Subscriptions, and EMIs.
-- **Robust Error Handling**: Graceful frontend degradation, dynamic UI updates, and intelligent cleanup when background processing fails or statements go missing.
+- **Backend**: Django, Django REST Framework, Simple JWT
+- **Database**: PostgreSQL support, SQLite fallback for local development
+- **AI / LLM**: Google Gemini via `google-generativeai` / `google-genai`
+- **Frontend**: HTML, Vanilla JavaScript, Bootstrap 5, CSS
+- **Document Processing**: pdfplumber, pandas, Django file uploads
+- **Deployment**: Render, Gunicorn, Django staticfiles
 
----
+## Project Structure
 
-## 🛠 Tech Stack
+- `accounts/` — authentication, registration, JWT login, custom user model
+- `statements/` — statement upload, parsing, analytics, audit APIs, secure file serving
+- `audits/` — analytics engine, AI audit orchestration, prompts, schemas
+- `financial_engine/` — merchant mapping, normalization, PII redaction, detectors
+- `chatbot/` — chatbot API, intent detection, retrieval context, prompt construction
+- `services/` — Gemini provider integration and error handling
+- `finsight/` — Django settings, URLs, WSGI, static/media configuration
+- `frontend/` — HTML pages and static JS/CSS frontend app
+- `media/` — uploaded statement files
+- `staticfiles/` — collected production static assets
+- `manage.py` — Django management entrypoint
 
-**Backend**
-- **Framework**: Django & Django REST Framework (DRF)
-- **Database**: SQLite (Development) / PostgreSQL (Ready)
-- **AI Integration**: Google Gemini API (`google-generativeai`)
-- **Authentication**: JWT / Token-based authentication (Simple JWT)
+## Local Development Setup
 
-**Frontend**
-- **Core**: HTML5, Vanilla JavaScript, CSS3
-- **Styling framework**: Bootstrap 5
-- **Icons**: Bootstrap Icons
-
----
-
-## ⚙️ How to Run Locally
-
-1. **Clone the repository:**
+1. Clone the repository:
    ```bash
    git clone https://github.com/your-username/FinSight.git
    cd FinSight
    ```
 
-2. **Set up the Virtual Environment:**
+2. Create and activate a virtual environment:
    ```bash
    python3 -m venv venv
-   source venv/bin/activate  # On Windows use: venv\Scripts\activate
+   source venv/bin/activate
    ```
 
-3. **Install Dependencies:**
+3. Install dependencies:
    ```bash
    pip install -r requirements.txt
    ```
 
-4. **Environment Variables:**
-   Create a `.env` file in the root directory and add your API keys:
-   ```env
-   GEMINI_API_KEY=your_gemini_api_key_here
+4. Configure environment variables:
+   ```bash
+   cp .env.example .env
    ```
+   Update `.env` with your values.
 
-5. **Run Migrations:**
+5. Database configuration:
+   - If `POSTGRES_DB` is set, the app uses PostgreSQL.
+   - If `POSTGRES_DB` is not set, the app falls back to SQLite.
+
+6. Run migrations:
    ```bash
    python manage.py migrate
    ```
 
-6. **Start the Django Backend:**
+7. Optional static collection:
+   ```bash
+   python manage.py collectstatic --noinput
+   ```
+
+8. Start the development server:
    ```bash
    python manage.py runserver
    ```
 
-7. **Access the Application:**
-   Open your browser and navigate to the frontend folder or host it locally (e.g., via VS Code Live Server). By default, the frontend interacts with `http://127.0.0.1:8000/api/v1/`.
+9. Open `http://127.0.0.1:8000/` in your browser.
 
----
+> Do not commit secrets such as `GEMINI_API_KEY` or `SECRET_KEY`.
 
-## 📊 Current Progress
+## Environment Variables
 
-```text
-███████████████████████░░ 95%
+The current settings use:
 
-✅ Core Features
-✅ Analytics
-✅ AI Audit
-✅ Chatbot
-✅ UI Polish
-✅ Upload Robustness
-⬜ Database Validation
-⬜ Documentation
-⬜ PostgreSQL Migration
-⬜ Deployment
+- `SECRET_KEY`
+- `DEBUG`
+- `ALLOWED_HOSTS`
+- `POSTGRES_DB`
+- `POSTGRES_USER`
+- `POSTGRES_PASSWORD`
+- `POSTGRES_HOST`
+- `POSTGRES_PORT`
+- `GEMINI_API_KEY`
+- `USE_MOCK_AI`
+- `MOCK_PARSER`
+- `MOCK_AUDIT`
+- `CORS_ALLOWED_ORIGINS`
+- `CSRF_TRUSTED_ORIGINS`
+
+## Deployment
+
+Live URL: https://finsight-pqcd.onrender.com
+
+The current deployment is configured for Render with:
+- Gunicorn
+- Django staticfiles
+- environment-driven settings
+- PostgreSQL support
+
+Build command:
+```bash
+pip install -r requirements.txt && ./build.sh
 ```
 
-## 🚀 Development Roadmap
+Start command:
+```bash
+gunicorn finsight.wsgi:application
+```
 
-### ✅ Phase 1: Core Platform (Completed)
-- [x] JWT Authentication & Protected Routes
-- [x] Drag & Drop PDF Upload Pipeline
-- [x] Gemini-Powered Parsing & PII Redaction
-- [x] Deterministic Financial Intelligence Engine (Cashflow, Anomalies, Subscriptions, EMIs)
-- [x] AI Audit Engine (Risk Assessment & Verdicts)
-- [x] RAG-powered Conversational Chatbot
-- [x] Interactive UI Dashboard
+## Deployment Limitations
 
-### 🚧 Phase 2: Stabilization (In Progress)
-- [x] Upload Pipeline Robustness & Atomic Transactions
-- [ ] Database Validation & Cascade Deletes
-- [ ] MerchantCategory Caching & Integrity Checks
-- [ ] Final QA & Edge-case Handling
+- Render free services may spin down when idle, so the first request after inactivity can be slow.
+- Free PostgreSQL instances are temporary and not intended for permanent production storage.
+- Uploaded PDF files stored on the app filesystem are ephemeral on free Render web services.
+- This deployment is best suited for portfolio/demo purposes, not long-term production financial storage.
 
-### 📦 Phase 3 & 4: Cleanup and Documentation
-- [ ] Remove unused code, debug prints, and TODOs
-- [ ] Protect Secrets and organize `.gitignore`
-- [ ] Complete Architecture Diagrams and Setup Guides
+## Security / Privacy
 
-### 🐘 Phase 5 & 6: Production Deployment
-- [ ] Migrate SQLite to PostgreSQL
-- [ ] Configure Environment Variables and Production Settings
-- [ ] Deploy PostgreSQL, Django Backend, and Frontend
+- JWT authentication protects API access.
+- Statement files are served through backend views and permission checks.
+- PII is redacted before external AI processing.
+- Secrets are loaded from environment variables.
+- Production deployments should use `DEBUG=False`.
 
-### 🌱 Future Enhancements (Post-v1)
-- [ ] Background processing with Celery + Redis
-- [ ] Multi-month Trend Analysis
-- [ ] Export AI Audit (PDF/CSV)
-- [ ] Budget planning & forecasting
-- [ ] Multi-language support
+## Current Status
 
----
+FinSight is an ongoing portfolio project with working PDF upload, parsing, analytics, AI audit, and chatbot interactions.
+The app is integrated end-to-end, with remaining improvements focused on production persistence, deployment stability, and testing.
 
-### ⭐ If you found this useful, please consider giving the repository a star!
+## Future Improvements
+
+- Persistent production storage for uploaded statements
+- Permanent PostgreSQL deployment
+- Improved deployment infrastructure and monitoring
+- Expanded chatbot retrieval and context handling
+- Stronger automated tests and validation
+
+## License
+
+No license has been specified yet.
