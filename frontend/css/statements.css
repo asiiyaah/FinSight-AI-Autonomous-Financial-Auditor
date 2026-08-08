@@ -61,7 +61,7 @@
 }
 
 .card-title-block {
-    flex: 1 1 auto;
+    flex: 1;
     min-width: 0;
 }
 
@@ -70,9 +70,9 @@
     font-weight: 600;
     color: var(--text-primary);
     margin-bottom: 2px;
-    white-space: normal;
-    overflow-wrap: break-word;
-    word-break: break-word;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .card-upload-date {
@@ -95,7 +95,6 @@
     text-transform: uppercase;
     white-space: nowrap;
     flex-shrink: 0;
-    margin-left: auto;
 }
 
 .status-badge.uploaded {

@@ -32,8 +32,6 @@ urlpatterns = [
     path('api/v1/', include('chatbot.urls')),
 ]
 
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-
 urlpatterns += [
     path('', serve, kwargs={'path': 'index.html', 'document_root': FRONTEND_DIR}),
     re_path(r'^(?P<path>.*)$', serve, kwargs={'document_root': FRONTEND_DIR}),

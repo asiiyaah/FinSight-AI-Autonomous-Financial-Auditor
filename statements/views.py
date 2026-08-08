@@ -2,6 +2,7 @@ from rest_framework.views import APIView
 from django.db import transaction
 from rest_framework.response import Response
 from rest_framework import status
+from django.http import FileResponse
 from rest_framework.permissions import IsAuthenticated
 from .models import Statement
 from .parser import parse_statement
@@ -61,7 +62,7 @@ class StatementDetailView(APIView):
                 "audit_status": statement.audit_status,
                 "transaction_count": audit_context.get("transaction_count", 0),
                 "duration_days": audit_context.get("duration_days", 0),
-                "file_url": statement.file.url if statement.file else None,
+                "file_url": f"/api/v1/statements/{statement.id}/file/" if statement.file else None,
             },
             "analytics": statement.analytics if statement.analytics else {},
             "ai_audit": statement.ai_audit if statement.ai_audit else {},
@@ -92,6 +93,35 @@ class StatementDetailView(APIView):
             status=status.HTTP_204_NO_CONTENT
         )
 
+
+class StatementFileView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, statement_id):
+        try:
+            statement = Statement.objects.get(
+                id=statement_id,
+                user=request.user
+            )
+        except Statement.DoesNotExist:
+            return Response(
+                {"error": "Statement not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        if not statement.file:
+            return Response(
+                {"error": "File not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        try:
+            return FileResponse(statement.file.open('rb'), content_type='application/pdf')
+        except Exception:
+            return Response(
+                {"error": "File is missing from disk or unreadable"},
+                status=status.HTTP_404_NOT_FOUND
+            )
 
 class StatementUploadView(APIView):
     permission_classes=[IsAuthenticated]
