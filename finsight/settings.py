@@ -19,19 +19,26 @@ load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
+# ---------------------------------------------------------------------------
+# Core Security Settings
+# ---------------------------------------------------------------------------
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+SECRET_KEY = os.environ.get("SECRET_KEY")
+if not SECRET_KEY:
+    raise ValueError("SECRET_KEY environment variable is required. Set it in your .env file.")
 
-ALLOWED_HOSTS = []
+DEBUG = os.environ.get("DEBUG", "True").lower() in ("true", "1", "yes")
 
+ALLOWED_HOSTS = [
+    h.strip()
+    for h in os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+    if h.strip()
+]
 
+# ---------------------------------------------------------------------------
 # Application definition
+# ---------------------------------------------------------------------------
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -43,7 +50,7 @@ INSTALLED_APPS = [
     # 3rd party apps
     'rest_framework',
     'rest_framework_simplejwt',
-    'corsheaders', 
+    'corsheaders',
 
     # Local apps
     'accounts',
@@ -82,9 +89,10 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'finsight.wsgi.application'
 
-
+# ---------------------------------------------------------------------------
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
+# ---------------------------------------------------------------------------
 
 POSTGRES_DB = os.environ.get("POSTGRES_DB")
 
@@ -107,10 +115,10 @@ else:
         }
     }
 
-
-DEBUG=True
+# ---------------------------------------------------------------------------
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
+# ---------------------------------------------------------------------------
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -130,9 +138,10 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
+# ---------------------------------------------------------------------------
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
+# ---------------------------------------------------------------------------
 
 LANGUAGE_CODE = 'en-us'
 
@@ -142,11 +151,28 @@ USE_I18N = True
 
 USE_TZ = True
 
-
+# ---------------------------------------------------------------------------
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
+# ---------------------------------------------------------------------------
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_DIRS = [
+    BASE_DIR / 'frontend' / 'static',
+]
+
+# ---------------------------------------------------------------------------
+# Media files (Uploaded financial PDFs)
+# Served securely through StatementFileView — NOT via /media/ URL.
+# ---------------------------------------------------------------------------
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# ---------------------------------------------------------------------------
+# Authentication
+# ---------------------------------------------------------------------------
 
 AUTH_USER_MODEL = 'accounts.CustomUser'
 
@@ -162,18 +188,46 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 5,
 }
 
-# This turns off the browser block so our local HTML file can talk to our API endpoints
-CORS_ALLOW_ALL_ORIGINS = True
-
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     'ROTATE_REFRESH_TOKENS': True,
 }
 
+# ---------------------------------------------------------------------------
+# CORS & CSRF
+# ---------------------------------------------------------------------------
+
+# CORS: In development allow all origins; in production use a whitelist.
+CORS_ALLOWED_ORIGINS_RAW = os.environ.get("CORS_ALLOWED_ORIGINS", "")
+if CORS_ALLOWED_ORIGINS_RAW:
+    CORS_ALLOW_ALL_ORIGINS = False
+    CORS_ALLOWED_ORIGINS = [
+        o.strip() for o in CORS_ALLOWED_ORIGINS_RAW.split(",") if o.strip()
+    ]
+else:
+    # Convenient default for local development
+    CORS_ALLOW_ALL_ORIGINS = True
+
+# CSRF trusted origins (required when behind a reverse proxy or custom domain)
+CSRF_TRUSTED_ORIGINS_RAW = os.environ.get("CSRF_TRUSTED_ORIGINS", "")
+if CSRF_TRUSTED_ORIGINS_RAW:
+    CSRF_TRUSTED_ORIGINS = [
+        o.strip() for o in CSRF_TRUSTED_ORIGINS_RAW.split(",") if o.strip()
+    ]
+
+# ---------------------------------------------------------------------------
+# AI / LLM Configuration
+# ---------------------------------------------------------------------------
+
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 USE_MOCK_AI = os.environ.get("USE_MOCK_AI", "True").lower() in ("true", "1", "yes", "mock")
 MOCK_PARSER = os.environ.get("MOCK_PARSER", "True").lower() in ("true", "1", "yes", "mock")
 MOCK_AUDIT = os.environ.get("MOCK_AUDIT", "True").lower() in ("true", "1", "yes", "mock")
 
-SECRET_KEY = os.environ.get("SECRET_KEY")
+# ---------------------------------------------------------------------------
+# Default primary key field type
+# https://docs.djangoproject.com/en/6.0/ref/settings/#default-auto-field
+# ---------------------------------------------------------------------------
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
