@@ -1,9 +1,9 @@
-# FinSight — AI-Powered Financial Statement Auditing Platform
+# FinSight — AI-Powered Financial Statement Auditing Platform 🚀
 
 FinSight allows users to securely upload PDF bank statements and receive automated financial analysis, risk detection, and AI-powered audit insights.
 The project combines deterministic statement parsing with Gemini-backed AI audit and chatbot features, all served through a Django backend.
 
-## Key Features
+## Key Features ✨
 
 - PDF statement upload and secure backend file access
 - Deterministic transaction extraction and analytics
@@ -14,7 +14,7 @@ The project combines deterministic statement parsing with Gemini-backed AI audit
 - JWT authentication via Django REST Framework and Simple JWT
 - Frontend delivered through Django static files and `collectstatic`
 
-## Architecture / Workflow
+## Architecture / Workflow 🧠
 
 User
   ↓
@@ -35,7 +35,7 @@ Chatbot / Statement Retrieval
 - **Layer A**: deterministic parsing and analytics
 - **Layer B**: Gemini-powered AI audit and chatbot response generation
 
-## Tech Stack
+## Tech Stack 🛠
 
 - **Backend**: Django, Django REST Framework, Simple JWT
 - **Database**: PostgreSQL support, SQLite fallback for local development
@@ -162,8 +162,8 @@ gunicorn finsight.wsgi:application
 
 ## Current Status
 
-FinSight is an ongoing portfolio project with working PDF upload, parsing, analytics, AI audit, and chatbot interactions.
-The app is integrated end-to-end, with remaining improvements focused on production persistence, deployment stability, and testing.
+FinSight is a completed portfolio project with working PDF upload, parsing, analytics, AI audit, and chatbot interactions.
+The app is integrated end-to-end and demonstrates a full-stack financial auditing workflow.
 
 ## Future Improvements
 
@@ -173,6 +173,7 @@ The app is integrated end-to-end, with remaining improvements focused on product
 - Expanded chatbot retrieval and context handling
 - Stronger automated tests and validation
 
-## License
+## Star the Project ⭐
 
-No license has been specified yet.
+If you found this project helpful or interesting, please give it a star on GitHub — it really helps support the work and future improvements.
+

@@ -448,9 +448,8 @@ runAuditBtn.addEventListener("click", async () => {
         // Successfully completed audit, fetch details again to reload layout
         await fetchStatementDetails();
         
-        // Hide loader & restore button
+        // Hide loader and keep the button state synced to the latest backend status
         runAuditBtn.disabled = false;
-        runAuditBtn.classList.remove("d-none");
         auditProgress.classList.add("d-none");
 
         // Scroll to the audit section for immediate visual feedback
