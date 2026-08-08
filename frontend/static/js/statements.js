@@ -1,5 +1,5 @@
 
-const BASE_URL = "http://127.0.0.1:8000/api/v1";
+const BASE_URL = "/api/v1";
 
 // Auth guard
 const accessToken = localStorage.getItem("access_token");
