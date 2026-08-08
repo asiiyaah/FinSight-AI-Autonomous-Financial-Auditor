@@ -127,13 +127,7 @@ The current settings use:
 
 ## Deployment
 
-Live URL: https://finsight-pqcd.onrender.com
-
-The current deployment is configured for Render with:
-- Gunicorn
-- Django staticfiles
-- environment-driven settings
-- PostgreSQL support
+The current deployment is configured for Render and uses Gunicorn to serve the Django application. Static assets are served via Django staticfiles and runtime configuration is controlled by environment variables.
 
 Build command:
 ```bash
@@ -145,12 +139,17 @@ Start command:
 gunicorn finsight.wsgi:application
 ```
 
-## Deployment Limitations
+## Live Demo & Deployment Limitations
 
-- Render free services may spin down when idle, so the first request after inactivity can be slow.
-- Free PostgreSQL instances are temporary and not intended for permanent production storage.
-- Uploaded PDF files stored on the app filesystem are ephemeral on free Render web services.
-- This deployment is best suited for portfolio/demo purposes, not long-term production financial storage.
+- Live demo: https://finsight-pqcd.onrender.com
+- Hosting: the live site runs on Render's Free tier.
+- Cold starts: the web service may spin down after inactivity, so the first request after a period of idle time can be slower.
+- Database: the free PostgreSQL instance used by the demo is temporary and has a limited lifetime.
+- Storage: the deployed free service uses ephemeral filesystem storage — uploaded PDFs are not permanently retained and should not be relied upon for long-term storage.
+- Intended use: the public demo is provided for portfolio demonstration and evaluation of the application's features and architecture; it is not a production financial service.
+- Safety: do not upload real bank statements, passwords, API keys, or other sensitive personal/financial information to the public demo.
+
+Note: these limitations apply to the hosted demo only. A local development setup (running the app locally with your own database and storage) can provide persistent storage and stronger operational control.
 
 ## Security / Privacy
 
