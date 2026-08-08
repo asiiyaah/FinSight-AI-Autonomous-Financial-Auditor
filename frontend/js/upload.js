@@ -1,4 +1,3 @@
-console.log("upload.js loaded");
 
 const accessToken = localStorage.getItem("access_token");
 if (!accessToken) {

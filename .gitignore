@@ -13,3 +13,10 @@ generate_data.py
 test_redaction.py
 skills/
 docs/
+
+# IDE & OS Files
+.idea/
+.DS_Store
+
+# Logs
+*.log

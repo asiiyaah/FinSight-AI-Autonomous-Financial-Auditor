@@ -1,4 +1,3 @@
-console.log("dashboard.js loaded");
 
 const BASE_URL = "http://127.0.0.1:8000/api/v1";
 const accessToken = localStorage.getItem("access_token");

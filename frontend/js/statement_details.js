@@ -1,4 +1,3 @@
-console.log("statement_details.js loaded");
 
 // Simple Toast Notification System
 function showToast(message) {

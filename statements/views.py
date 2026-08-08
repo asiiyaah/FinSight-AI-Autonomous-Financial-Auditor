@@ -1,3 +1,4 @@
+import logging
 from rest_framework.views import APIView
 from django.db import transaction
 from rest_framework.response import Response
@@ -12,6 +13,7 @@ from .serializers import StatementListSerializer
 from rest_framework.pagination import PageNumberPagination
 from services.llm.exceptions import LLMError
 
+logger = logging.getLogger(__name__)
 
 # Create your views here.
 
@@ -51,7 +53,7 @@ class StatementDetailView(APIView):
                     statement.audit_status = "analytics_ready"
                 statement.save()
             except Exception as e:
-                print(f"Error computing analytics on-the-fly: {e}")
+                logger.error(f"Error computing analytics on-the-fly: {e}")
 
         audit_context = statement.analytics.get("audit_context", {}) if statement.analytics else {}
 

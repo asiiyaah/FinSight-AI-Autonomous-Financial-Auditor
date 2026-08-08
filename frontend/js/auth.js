@@ -148,7 +148,7 @@ registerForm.addEventListener("submit", async (event) => {
             localStorage.setItem("is_new_user", "true");
             window.location.href = "dashboard.html";
         } else {
-            console.log(data);
+
             const firstField = Object.keys(data)[0];
             let errorMessage = "Registration failed.";
             if (Array.isArray(data[firstField])) {
@@ -193,7 +193,7 @@ loginForm.addEventListener("submit", async (event) => {
             localStorage.setItem("is_new_user", "false");
             window.location.href = "dashboard.html";
         } else {
-            console.log(data);
+
             alert("Login failed! " + (data.detail || "Invalid credentials"));
         }
 

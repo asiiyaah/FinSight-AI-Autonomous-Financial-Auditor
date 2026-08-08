@@ -1,11 +1,14 @@
 import time
 import re
+import logging
 from typing import List, Dict, Set
 from services.llm import get_llm_provider
 from django.conf import settings
 from pydantic import BaseModel
 from statements.models import MerchantCategory
 from .merchant_mapping import MERCHANT_CATEGORY_MAP
+
+logger = logging.getLogger(__name__)
 
 class MerchantCategoryResult(BaseModel):
     vendor: str
@@ -172,6 +175,6 @@ def _ai_categorize_vendors(vendors: List[str]) -> Dict[str, str]:
         if result and "categorizations" in result:
             return {item["vendor"]: item["category"] for item in result["categorizations"]}
     except Exception as e:
-        print(f"Failed AI categorization: {e}")
+        logger.error(f"Failed AI categorization: {e}")
         
     return {vendor: "Other" for vendor in vendors}
