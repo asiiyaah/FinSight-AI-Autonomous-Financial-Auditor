@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import StatementUploadView,StatementAuditView,StatementListView,StatementDetailView,StatementFileView
+from .views import StatementUploadView,StatementAuditView,StatementListView,StatementDetailView,StatementFileView,StatementAuditDownloadView
 
 
 urlpatterns = [
@@ -8,4 +8,5 @@ urlpatterns = [
     path('<int:statement_id>/file/',StatementFileView.as_view(),name='statement-file'),
     path('upload/',StatementUploadView.as_view(),name='upload'),
     path('<int:statement_id>/audit/',StatementAuditView.as_view(),name='audit'),
+    path('<int:statement_id>/audit/download/',StatementAuditDownloadView.as_view(),name='audit-download'),
 ]

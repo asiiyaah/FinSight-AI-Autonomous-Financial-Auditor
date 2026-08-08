@@ -6,6 +6,7 @@ from django.http import FileResponse
 from rest_framework.permissions import IsAuthenticated
 from .models import Statement
 from .parser import parse_statement
+from .pdf_generator import generate_audit_pdf
 from audits.audit_engine import run_full_audit
 from .serializers import StatementListSerializer
 from rest_framework.pagination import PageNumberPagination
@@ -261,5 +262,37 @@ class StatementAuditView(APIView):
                     "error": "Failed to complete audit",
                     "details": str(e)
                 },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+class StatementAuditDownloadView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, statement_id):
+        try:
+            statement = Statement.objects.get(id=statement_id, user=request.user)
+        except Statement.DoesNotExist:
+            return Response(
+                {"error": "Statement not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        if not statement.ai_audit:
+            return Response(
+                {"error": "AI Audit data is missing or incomplete for this statement."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            pdf_buffer = generate_audit_pdf(statement, statement.ai_audit)
+            return FileResponse(
+                pdf_buffer,
+                as_attachment=True,
+                filename=f"finsight_audit_{statement.id}.pdf",
+                content_type="application/pdf"
+            )
+        except Exception as e:
+            return Response(
+                {"error": "Failed to generate PDF."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )

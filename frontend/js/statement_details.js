@@ -46,6 +46,7 @@ const infoParsingStatus = document.getElementById("info-parsing-status");
 const infoTxCount = document.getElementById("info-tx-count");
 const infoAuditStatus = document.getElementById("info-audit-status");
 const runAuditBtn = document.getElementById("run-audit-btn");
+const downloadAuditBtn = document.getElementById("download-audit-btn");
 const auditProgress = document.getElementById("audit-progress");
 const auditHelperText = document.getElementById("audit-helper-text");
 const loadingState = document.getElementById("loading-state");
@@ -155,9 +156,12 @@ function renderPage(data) {
 
     // Trigger AI Audit button configuration
     if (stmt.audit_status === "completed") {
-        runAuditBtn.innerHTML = '<i class="bi bi-arrow-repeat me-2"></i> Re-run AI Audit';
-        auditHelperText.textContent = "Audit completed. You can re-run it anytime.";
+        runAuditBtn.classList.add("d-none");
+        downloadAuditBtn.classList.remove("d-none");
+        auditHelperText.textContent = "Audit completed. You can download the PDF report below.";
     } else {
+        downloadAuditBtn.classList.add("d-none");
+        runAuditBtn.classList.remove("d-none");
         runAuditBtn.innerHTML = '<i class="bi bi-cpu me-2"></i> Run AI Audit';
         auditHelperText.textContent = "Upload is complete. Click Run AI Audit to generate AI findings for this statement.";
     }
@@ -459,6 +463,66 @@ runAuditBtn.addEventListener("click", async () => {
         auditProgress.classList.add("d-none");
         runAuditBtn.disabled = false;
         runAuditBtn.classList.remove("d-none");
+    }
+});
+
+// Download PDF button click
+downloadAuditBtn.addEventListener("click", async () => {
+    downloadAuditBtn.disabled = true;
+    const originalText = downloadAuditBtn.innerHTML;
+    downloadAuditBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Downloading...';
+
+    try {
+        const response = await fetch(`${BASE_URL}/statements/${statementId}/audit/download/`, {
+            method: "GET",
+            headers: {
+                Authorization: `Bearer ${accessToken}`
+            }
+        });
+
+        if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            showToast(`Download failed: ${errData.error || "Please try again."}`);
+            downloadAuditBtn.disabled = false;
+            downloadAuditBtn.innerHTML = originalText;
+            return;
+        }
+
+        const contentType = response.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/pdf")) {
+            showToast("Error: Server did not return a valid PDF document.");
+            downloadAuditBtn.disabled = false;
+            downloadAuditBtn.innerHTML = originalText;
+            return;
+        }
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.style.display = "none";
+        a.href = url;
+        
+        let filename = `finsight_audit_${statementId}.pdf`;
+        const contentDisposition = response.headers.get("Content-Disposition");
+        if (contentDisposition && contentDisposition.includes("filename=")) {
+            filename = contentDisposition.split("filename=")[1].replace(/["']/g, "");
+        }
+        
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        
+        // Clean up
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        showToast("PDF downloaded successfully!");
+
+    } catch (error) {
+        console.error(error);
+        showToast("Unable to download PDF. Please check your connection.");
+    } finally {
+        downloadAuditBtn.disabled = false;
+        downloadAuditBtn.innerHTML = originalText;
     }
 });
 
